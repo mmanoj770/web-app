@@ -4,6 +4,8 @@ __pycache__/
 venv/
 .env
 db.sqlite3
-media/
+# Product photos are committed (needed on Vercel); customer uploads are not.
+media/*
+!media/products/
 staticfiles/
 .DS_Store

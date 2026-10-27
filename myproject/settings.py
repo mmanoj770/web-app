@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 import os
 from pathlib import Path
+from urllib.parse import parse_qsl, unquote, urlsplit
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,12 +45,22 @@ SECRET_KEY = os.environ.get(
     'django-insecure-dev-only-change-me',
 )
 
+# Vercel sets VERCEL=1 in its builds and functions (see "Deploying to Vercel" in README.md).
+ON_VERCEL = bool(os.environ.get('VERCEL'))
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
+DEBUG = os.environ.get('DJANGO_DEBUG', '0' if ON_VERCEL else '1') == '1'
 
 ALLOWED_HOSTS = [h for h in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if h]
+CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',') if o]
 if DEBUG:
     ALLOWED_HOSTS += ['localhost', '127.0.0.1', 'testserver']
+if ON_VERCEL:
+    ALLOWED_HOSTS += ['.vercel.app']
+    CSRF_TRUSTED_ORIGINS += ['https://*.vercel.app']
+    # Vercel terminates HTTPS and forwards plain HTTP with this header.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = True
 
 
 # Application definition
@@ -75,6 +88,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -108,12 +122,37 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+def _database_from_url(url):
+    """Django DATABASES entry for a postgres://user:pass@host:port/name URL."""
+    parsed = urlsplit(url)
+    if parsed.scheme not in ('postgres', 'postgresql'):
+        raise ImproperlyConfigured(f'DATABASE_URL must be a postgres:// URL, not {parsed.scheme}://')
+    options = dict(parse_qsl(parsed.query))
+    return {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': unquote(parsed.path.lstrip('/')),
+        'USER': unquote(parsed.username or ''),
+        'PASSWORD': unquote(parsed.password or ''),
+        'HOST': parsed.hostname or '',
+        'PORT': str(parsed.port or ''),
+        'OPTIONS': {'sslmode': options.get('sslmode', 'require')},
+        'CONN_MAX_AGE': 0 if ON_VERCEL else 60,
     }
-}
+
+
+# DATABASE_URL (e.g. Neon or Vercel Postgres) for production. Without it, SQLite:
+# the local db.sqlite3, or on Vercel a demo copy in /tmp that resets on cold starts.
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
+DEMO_DATABASE = BASE_DIR / 'deploy' / 'demo.sqlite3'
+if DATABASE_URL:
+    DATABASES = {'default': _database_from_url(DATABASE_URL)}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': Path('/tmp/mj-demo.sqlite3') if ON_VERCEL else BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -155,16 +194,18 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Bumped when CSS/JS change so browsers fetch the new files instead of cached ones.
 ASSET_VERSION = '4.1'
-if not DEBUG:
-    # Hashed file names for long-term caching in production (run collectstatic).
-    STORAGES = {
-        'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
-        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'},
-    }
+# WhiteNoise serves static files in production straight from the app folders, so no
+# collectstatic step is needed; ASSET_VERSION query strings handle cache busting.
+WHITENOISE_USE_FINDERS = True
 
-# Uploaded product images
+# Product photos (committed in media/products) and customer uploads. On Vercel the code
+# folder is read-only, so media is copied to /tmp at start-up and uploads last until the
+# instance is recycled; use object storage for permanent uploads.
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_SOURCE = BASE_DIR / 'media'
+MEDIA_ROOT = Path('/tmp/mj-media') if ON_VERCEL else MEDIA_SOURCE
+# Serve MEDIA_URL from Django even with DEBUG off (fine for the demo's small photos).
+SERVE_MEDIA = DEBUG or ON_VERCEL or os.environ.get('DJANGO_SERVE_MEDIA') == '1'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

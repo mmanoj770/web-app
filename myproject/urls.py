@@ -1,7 +1,7 @@
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.static import serve
 
 admin.site.site_header = f'{settings.STORE_NAME} administration'
 admin.site.site_title = settings.STORE_NAME
@@ -18,5 +18,8 @@ urlpatterns = [
     path('', include('catalog.urls')),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.SERVE_MEDIA:
+    # django.conf.urls.static.static() only works with DEBUG on; this also covers Vercel.
+    urlpatterns += [
+        re_path(rf'^{settings.MEDIA_URL.strip("/")}/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    ]

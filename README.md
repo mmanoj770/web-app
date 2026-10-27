@@ -145,9 +145,41 @@ accounts and are only there to fill the store for development.
 python manage.py test
 ```
 
-## Before deploying
+## Deploying to Vercel
 
-- Set `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=0` and `DJANGO_ALLOWED_HOSTS`, then run `python manage.py collectstatic`.
-- Use PostgreSQL instead of SQLite, a real email backend and persistent storage for uploaded photos.
+Import the GitHub repo in Vercel; it detects Django automatically. On Vercel (`VERCEL=1`) the app turns debug
+off, accepts `*.vercel.app` hosts, serves CSS/JS with WhiteNoise and serves the product photos in `media/products`.
+
+In Vercel → Project → Settings → Environment Variables, set:
+
+| Variable | Value |
+|---|---|
+| `DJANGO_SECRET_KEY` | A long random string: `python -c "import secrets; print(secrets.token_urlsafe(50))"` |
+| `DATABASE_URL` | A Postgres URL, e.g. from Neon (Vercel → Storage → Neon). Optional, see below. |
+| `ANTHROPIC_API_KEY` (or another provider's key) | Optional: powers the AI assistant. Ollama can't run on Vercel. |
+| `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | Only for a custom domain: `shop.example.com` and `https://shop.example.com` |
+
+**Without `DATABASE_URL`** the site runs on a demo copy of the store (`deploy/demo.sqlite3`, copied to `/tmp`
+when an instance starts). It works straight away, but sign-ups, orders and tickets are lost whenever Vercel starts
+a new instance, and the demo accounts' passwords are public.
+
+**With `DATABASE_URL`**, data is permanent. Set up the database once from your computer:
+
+```bash
+DATABASE_URL='postgresql://...' python manage.py migrate
+DATABASE_URL='postgresql://...' python manage.py seed_store --no-users --no-images   # products only
+DATABASE_URL='postgresql://...' python manage.py createsuperuser                     # your admin account
+```
+
+Run `migrate` the same way after pulling changes that add migrations. Photos uploaded on Vercel (ticket
+photos, new product photos) don't survive a new instance; use object storage such as Vercel Blob or S3 for those.
+To rebuild the demo database, run `migrate` and `seed_store` against an empty SQLite file and save it as
+`deploy/demo.sqlite3`.
+
+## Before deploying elsewhere
+
+- Set `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=0` and `DJANGO_ALLOWED_HOSTS` (and `DJANGO_SERVE_MEDIA=1` or a web
+  server for `/media/`).
+- Use PostgreSQL (`DATABASE_URL`) instead of SQLite, a real email backend and persistent storage for uploaded photos.
 - Configure a shared cache (for example Redis) so the chat rate limit applies across server processes.
 - Replace the simulated payment gateway and verify payments with the provider's webhooks.
