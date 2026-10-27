@@ -4,10 +4,10 @@
 <div class="card empty">
   <i class="bi bi-signpost-split"></i>
   <h2>We couldn't find that page</h2>
-  <p class="muted">It may have moved. Try searching, or ask our assistant.</p>
-  <div class="row" style="justify-content:center">
+  <p class="muted">Error <a class="code-pill" href="{% url 'support:error_codes' %}#WEB-404">WEB-404</a>: it may have moved. Try searching, or ask our assistant.</p>
+  <div class="row" style="justify-content:center; flex-wrap: wrap">
     <a class="btn btn-primary" href="{% url 'catalog:home' %}">Back to the store</a>
-    <button class="btn btn-white" type="button" data-ask="Help me find what I'm looking for"><i class="bi bi-stars"></i> Ask AI</button>
+    <button class="btn btn-white" type="button" data-ask="Help me find what I'm looking for"><i class="bi bi-stars"></i> Ask assistant</button>
   </div>
 </div>
 {% endblock %}

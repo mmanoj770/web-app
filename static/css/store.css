@@ -780,6 +780,22 @@ summary.btn::-webkit-details-marker { display: none; }
 .ai-suggest button { border: 1px solid var(--link); background: var(--surface); color: var(--link); border-radius: 16px;
   padding: 7px 13px; font-size: 13.5px; cursor: pointer; transition: background .15s, transform .15s var(--spring); }
 .ai-suggest button:hover { background: var(--accent-soft); }
+.ai-feedback { display: flex; align-items: center; gap: 4px; margin-top: -4px; font-size: 12px; color: var(--text-2); }
+.ai-feedback button { border: 0; background: none; color: var(--text-2); padding: 4px 6px; border-radius: 8px; cursor: pointer; }
+.ai-feedback button:hover { color: var(--text); background: var(--fill); }
+.ai-feedback button.active { color: var(--link); }
+
+/* Help center: FAQ search and error codes (loaded from /api/) */
+.faq-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+.faq-tools input { flex: 1 1 260px; }
+.faq-empty { padding: 24px; text-align: center; color: var(--text-2); }
+.code-pill { display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
+  font-weight: 700; padding: 3px 8px; border: 1px solid var(--line); background: var(--fill); letter-spacing: .5px; }
+.error-codes { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+.error-codes .card { padding: 18px; }
+.error-codes h3 { margin: 10px 0 6px; font-size: 16px; }
+.error-codes p { margin: 4px 0; font-size: 14px; }
+.error-codes .card:target { outline: 2px solid var(--link); }
 .ai-suggest button:active { transform: scale(.95); }
 .ai-chips { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px 10px; scrollbar-width: none; }
 .ai-chips::-webkit-scrollbar { display: none; }

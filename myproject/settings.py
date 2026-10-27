@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 from urllib.parse import parse_qsl, unquote, urlsplit
 
@@ -87,6 +88,7 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'accounts.User'
 
 MIDDLEWARE = [
+    'myproject.observability.RequestLogMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -193,7 +195,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Bumped when CSS/JS change so browsers fetch the new files instead of cached ones.
-ASSET_VERSION = '4.1'
+ASSET_VERSION = '5.0'
 # WhiteNoise serves static files in production straight from the app folders, so no
 # collectstatic step is needed; ASSET_VERSION query strings handle cache busting.
 WHITENOISE_USE_FINDERS = True
@@ -271,6 +273,14 @@ else:
         },
     }
 
+# MongoDB for chat transcripts and feedback (see myproject/mongo.py). Optional.
+MONGODB_URI = os.environ.get('MONGODB_URI', '')
+MONGODB_DB = os.environ.get('MONGODB_DB', 'mj')
+
+# India Post PIN code lookup at checkout (see orders/delivery.py).
+PINCODE_API_URL = os.environ.get('PINCODE_API_URL', 'https://api.postalpincode.in/pincode/{pin}')
+PINCODE_API_TIMEOUT = float(os.environ.get('PINCODE_API_TIMEOUT', '3'))
+
 # Who gets a "New order" email when a customer pays (comma separated).
 ORDER_ALERT_EMAILS = [e.strip() for e in os.environ.get('ORDER_ALERT_EMAILS', '').split(',') if e.strip()]
 
@@ -279,3 +289,22 @@ _vercel_domain = os.environ.get('VERCEL_PROJECT_PRODUCTION_URL', '')
 SITE_URL = os.environ.get(
     'SITE_URL', f'https://{_vercel_domain}' if _vercel_domain else 'http://127.0.0.1:8000',
 ).rstrip('/')
+
+
+# Logging
+# One JSON line per request from myproject.observability (Vercel → Logs shows them).
+# Request logs are quiet while running tests.
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+GIT_COMMIT = os.environ.get('VERCEL_GIT_COMMIT_SHA', '')
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {'plain': {'format': '%(levelname)s %(name)s %(message)s'}},
+    'handlers': {'console': {'class': 'logging.StreamHandler', 'formatter': 'plain'}},
+    'root': {'handlers': ['console'], 'level': 'WARNING'},
+    'loggers': {
+        'mj.requests': {'handlers': ['console'], 'level': 'CRITICAL' if TESTING else 'INFO', 'propagate': False},
+        'django.request': {'handlers': ['console'], 'level': 'CRITICAL' if TESTING else 'ERROR',
+                           'propagate': False},
+    },
+}

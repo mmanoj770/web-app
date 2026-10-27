@@ -116,6 +116,8 @@ class Payment(models.Model):
     card_last4 = models.CharField(max_length=4, blank=True)
     upi_id = models.CharField('UPI ID', max_length=100, blank=True)
     failure_reason = models.CharField(max_length=255, blank=True)
+    # Customer-facing code for a failed payment, e.g. PAY-001 (see support.ErrorCode).
+    error_code = models.CharField(max_length=12, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

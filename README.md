@@ -4,6 +4,25 @@ An AI-powered electronics store built with Django, with an Apple-inspired design
 like Amazon or Flipkart. Customers browse and buy products, chat with an AI shopping assistant and raise
 support tickets. Support agents and administrators work from a dashboard.
 
+**Live site: https://mj-shoppingapp.vercel.app** · Health check: https://mj-shoppingapp.vercel.app/health/
+
+## Launch checklist
+
+| Requirement | Where it is |
+|---|---|
+| Live HTTPS site, 3+ pages, mobile-friendly | Vercel (link above): home, products, product pages, bag, checkout, orders, help center, error codes, tickets. Responsive down to phone width. |
+| Chat widget on every page | `templates/assistant/widget.html`, included by `templates/base.html` (also on the 403/404/500 pages) |
+| 10+ FAQs in SQL, FAQ page from API | `support.FAQ` table (14 FAQs, editable in Django admin), `GET /api/faqs/`; the help center loads its FAQs from it |
+| 8+ error codes in SQL | `support.ErrorCode` table (13 codes such as `PAY-001`, `ORD-001`, `WEB-500`), `GET /api/error-codes/`, page at `/support/error-codes/`. Codes are shown where they happen (payments, checkout, error pages, chat rate limit). |
+| Custom 404/500 pages + Ask-assistant button | `templates/404.html`, `templates/500.html` (`myproject/views.py`, with a plain fallback if even that fails), `templates/403.html` |
+| Assistant answers FAQs and explains error codes | `assistant/fallback.py` uses `support/lookup.py`; LLMs get the `search_faqs` and `explain_error_code` tools |
+| Ticket created when unsure (CRUD) | `support.services.escalate_from_assistant`: questions the assistant can't answer become a ticket for logged-in customers. Tickets: create, read, update, delete in the site and at `/api/tickets/` |
+| Chats and feedback stored in MongoDB | `myproject/mongo.py`: every chat turn → `chats`, every 👍/👎 and ticket rating → `feedback` (set `MONGODB_URI`) |
+| Keys in env vars, no secrets in GitHub | All keys come from environment variables or the git-ignored `.env`; see `.env.example` |
+| Request logs + health check | `myproject/observability.py`: one JSON log line per request with an `X-Request-ID`; `GET /health/`; recent requests on Dashboard → System |
+| Extra third-party call with timeout and fallback | India Post PIN code API (`orders/delivery.py`): 3-second timeout, 1-day cache, falls back to a local estimate |
+| README with live address and improvements | This file: live address above, improvements at the end |
+
 ## Quick start
 
 ```bash
@@ -66,7 +85,7 @@ price, rating, discount, stock) with counts, sorting, product galleries with zoo
 wishlist, recently viewed, PIN code delivery estimate, AJAX add-to-cart, "Buy now", price breakdown with
 savings, three-step checkout with UPI or card, order confirmation and a delivery tracker.
 
-**Support**: help center with FAQs, a guided "raise a ticket" wizard (issue → order → details and photos),
+**Support**: help center with searchable FAQs (from the API), an error code reference, a guided "raise a ticket" wizard (issue → order → details and photos),
 ticket IDs like `TKT-000123`, auto-assignment to the least busy agent, priorities, first-reply deadlines
 (4 hours for payment and delivery problems, 24 hours otherwise), conversation threads with photos, internal
 notes, canned replies, satisfaction ratings and email notifications (printed to the console in development).
@@ -93,16 +112,55 @@ Browser (HTML pages + fetch() calls)
    │
 Django views ── forms & validation ── services (orders/services.py, support/services.py)
    │                                        │
-   ├── JSON endpoints: /search/suggest/, /cart/add/, /wishlist/…/toggle/, /assistant/chat/
+   ├── JSON endpoints: /api/… (FAQs, error codes, tickets, PIN codes), /assistant/chat/, /cart/add/, …
    │
    ├── Database (SQLite in development, PostgreSQL in production) via the Django ORM
+   ├── MongoDB: chat transcripts and feedback (optional)
+   ├── India Post PIN code API (3 s timeout, local fallback)
    ├── AI assistant → providers.py → Claude / OpenAI-compatible API / local Ollama, or rules
    ├── Email (console in development, SMTP in production)
    └── Media files (product photos, ticket photos) in media/
 ```
 
 Administrators can check every component at **Dashboard → System**, which shows the database, AI model, email,
-payments, storage and cache, and whether each one is live, in development mode or simulated.
+MongoDB, payments, storage and cache, whether each one is live, in development mode or simulated, and the
+latest requests.
+
+### JSON API
+
+| Endpoint | Methods | What it does |
+|---|---|---|
+| `/api/faqs/` | GET | FAQs; `?q=refund` to search, `?category=payments` to filter |
+| `/api/faqs/<id>/` | GET | One FAQ |
+| `/api/error-codes/` | GET | All error codes; `?area=payments` to filter |
+| `/api/error-codes/<code>/` | GET | One code, e.g. `/api/error-codes/PAY-001/` |
+| `/api/tickets/` | GET, POST | Your tickets (agents see all); create with `{"category", "subject", "description", "order_number"}` |
+| `/api/tickets/<code>/` | GET, PATCH, DELETE | Read with messages; edit `subject`/`description` while open, add a `message`, set `status`; delete a ticket nobody has answered yet |
+| `/api/pincode/<pin>/` | GET | City, state and delivery date for a PIN code |
+| `/health/` | GET | `200` with database, MongoDB and assistant status, `503` if the database is down |
+
+Ticket endpoints use the logged-in session; send the CSRF token in an `X-CSRFToken` header for POST, PATCH and
+DELETE.
+
+### MongoDB (chats and feedback)
+
+Create a free cluster at MongoDB Atlas, allow access from anywhere (`0.0.0.0/0`, Vercel has no fixed IP),
+create a database user and copy the connection string. Put it in `.env` and in Vercel's environment variables:
+
+```
+MONGODB_URI=mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/
+MONGODB_DB=mj
+```
+
+Every chat turn is stored in the `chats` collection and every 👍/👎 on an assistant reply and every ticket
+rating in `feedback`. The SQL database still keeps the chat history the widget shows, so if MongoDB is not set
+or is unreachable, chat keeps working: the failure is logged and MongoDB is skipped for a minute.
+
+### Request logs and health
+
+Every request is logged as one JSON line (time, request ID, method, path, status, duration, user, IP) and gets
+`X-Request-ID` and `Server-Timing` headers. On Vercel see Project → Logs. Point an uptime monitor (for example
+UptimeRobot) at `/health/`.
 
 ### Local AI model (free, no API key)
 
@@ -168,6 +226,7 @@ In Vercel → Project → Settings → Environment Variables, set:
 | `DJANGO_SECRET_KEY` | A long random string: `python -c "import secrets; print(secrets.token_urlsafe(50))"` |
 | `DATABASE_URL` | A Postgres URL, e.g. from Neon (Vercel → Storage → Neon). Optional, see below. |
 | `ANTHROPIC_API_KEY` (or another provider's key) | Optional: powers the AI assistant. Ollama can't run on Vercel. |
+| `MONGODB_URI` | Optional: MongoDB Atlas connection string for chats and feedback |
 | `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | Only for a custom domain: `shop.example.com` and `https://shop.example.com` |
 
 **Without `DATABASE_URL`** the site runs on a demo copy of the store (`deploy/demo.sqlite3`, copied to `/tmp`
@@ -186,6 +245,22 @@ Run `migrate` the same way after pulling changes that add migrations. Photos upl
 photos, new product photos) don't survive a new instance; use object storage such as Vercel Blob or S3 for those.
 To rebuild the demo database, run `migrate` and `seed_store` against an empty SQLite file and save it as
 `deploy/demo.sqlite3`.
+
+## Improvements
+
+What I would do next, roughly in order:
+
+1. **Permanent data**: connect Postgres (`DATABASE_URL`) and MongoDB Atlas (`MONGODB_URI`) on Vercel; until
+   then the live demo resets when Vercel starts a new instance.
+2. **Smarter assistant on the live site**: add an `ANTHROPIC_API_KEY` so Claude answers with tools instead of
+   the rule-based assistant, and use the 👍/👎 feedback in MongoDB to find questions to add as FAQs.
+3. **Real payments**: Razorpay or Stripe with webhooks instead of the simulated gateway.
+4. **Uploads**: store ticket and product photos in Vercel Blob or S3 so they survive redeploys.
+5. **Shared cache**: Redis for the chat rate limit and the PIN code cache across instances.
+6. **Monitoring**: send the request logs to a log service and alert on `/health/` failures; add error tracking
+   (Sentry) with the request ID.
+7. **Search**: Postgres full-text or vector search for products and FAQs, so the assistant also understands
+   Hindi and spelling variants.
 
 ## Before deploying elsewhere
 

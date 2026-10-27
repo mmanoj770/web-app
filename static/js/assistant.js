@@ -52,6 +52,37 @@
     return bubble;
   }
 
+  // Thumbs up/down under an assistant reply; stored with the conversation (and in MongoDB).
+  function addFeedback(id, helpful) {
+    if (!id || !panel.dataset.feedbackUrl) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'ai-feedback';
+    wrap.innerHTML = `<span>Helpful?</span>
+      <button type="button" data-helpful="true" aria-label="Helpful"><i class="bi bi-hand-thumbs-up"></i></button>
+      <button type="button" data-helpful="false" aria-label="Not helpful"><i class="bi bi-hand-thumbs-down"></i></button>`;
+    const mark = (value) => wrap.querySelectorAll('button').forEach((b) => {
+      b.classList.toggle('active', b.dataset.helpful === String(value));
+    });
+    if (helpful === true || helpful === false) mark(helpful);
+    wrap.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-helpful]');
+      if (!btn) return;
+      const value = btn.dataset.helpful === 'true';
+      mark(value);
+      try {
+        await fetch(panel.dataset.feedbackUrl, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf() },
+          body: JSON.stringify({ id, helpful: value }),
+        });
+        wrap.querySelector('span').textContent = value ? 'Thanks!' : 'Thanks, noted.';
+      } catch (err) { /* feedback is best effort */ }
+    });
+    log.appendChild(wrap);
+    scrollDown();
+  }
+
   function addTyping() {
     const el = document.createElement('div');
     el.className = 'ai-msg assistant ai-typing';
@@ -125,7 +156,12 @@
       const res = await fetch(panel.dataset.historyUrl, { credentials: 'same-origin' });
       const data = await res.json();
       if (data.assistant) engine.textContent = data.assistant;
-      if (data.messages.length) data.messages.forEach((m) => addMessage(m.role, m.content));
+      if (data.messages.length) {
+        data.messages.forEach((m) => {
+          addMessage(m.role, m.content);
+          if (m.role === 'assistant') addFeedback(m.id, m.helpful);
+        });
+      }
       else greet();
     } catch (e) {
       greet();
@@ -175,6 +211,7 @@
         addMessage('assistant', data.reply);
         addProducts(data.products);
         addActions(data.actions);
+        addFeedback(data.id);
         addSuggestions(data.suggestions);
       }
     } catch (e) {
@@ -226,6 +263,14 @@
     const question = trigger.dataset.ask;
     ensureLoaded().then(() => setTimeout(() => send(question), 200));
   });
+
+  // Links like /support/?ask=WEB-500 (from the plain error page) ask about that error code.
+  // Only error codes are accepted, so a link can't make the assistant send arbitrary messages.
+  const askCode = new URLSearchParams(window.location.search).get('ask');
+  if (askCode && /^[A-Z]{2,4}-\d{3}$/.test(askCode)) {
+    setOpen(true);
+    ensureLoaded().then(() => setTimeout(() => send(`What does error ${askCode} mean?`), 200));
+  }
 
   // Keep the panel open across page navigations within the session
   // (desktop only: on phones the panel covers the page).

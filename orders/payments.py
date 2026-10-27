@@ -17,11 +17,12 @@ import re
 import uuid
 from dataclasses import dataclass
 
+# Card number -> (error code, message). Codes are explained in support.ErrorCode.
 CARD_DECLINES = {
-    '4000000000000002': 'Your card was declined.',
-    '4000000000009995': 'Insufficient funds.',
+    '4000000000000002': ('PAY-001', 'Your card was declined.'),
+    '4000000000009995': ('PAY-002', 'Insufficient funds.'),
 }
-UPI_DECLINES = {'fail@upi': 'The payment request was declined in your UPI app.'}
+UPI_DECLINES = {'fail@upi': ('PAY-004', 'The payment request was declined in your UPI app.')}
 UPI_RE = re.compile(r'^[\w.\-]{2,}@[a-zA-Z]{2,}$')
 
 
@@ -30,6 +31,7 @@ class ChargeResult:
     success: bool
     reference: str = ''
     failure_reason: str = ''
+    error_code: str = ''
 
 
 def _reference():
@@ -55,18 +57,20 @@ def normalize_card(number):
 def charge_card(amount, card_number):
     card = normalize_card(card_number)
     if not 12 <= len(card) <= 19 or not luhn_valid(card):
-        return ChargeResult(False, failure_reason='Invalid card number.')
+        return ChargeResult(False, failure_reason='Invalid card number.', error_code='PAY-003')
     if card in CARD_DECLINES:
-        return ChargeResult(False, failure_reason=CARD_DECLINES[card])
+        code, reason = CARD_DECLINES[card]
+        return ChargeResult(False, failure_reason=reason, error_code=code)
     return ChargeResult(True, reference=_reference())
 
 
 def charge_upi(amount, upi_id):
     upi_id = upi_id.strip().lower()
     if not UPI_RE.match(upi_id):
-        return ChargeResult(False, failure_reason='Invalid UPI ID.')
+        return ChargeResult(False, failure_reason='Invalid UPI ID.', error_code='PAY-005')
     if upi_id in UPI_DECLINES:
-        return ChargeResult(False, failure_reason=UPI_DECLINES[upi_id])
+        code, reason = UPI_DECLINES[upi_id]
+        return ChargeResult(False, failure_reason=reason, error_code=code)
     return ChargeResult(True, reference=_reference())
 
 

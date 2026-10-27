@@ -6,6 +6,7 @@ from django.conf import settings
 from django.urls import reverse
 
 from catalog.models import Product
+from myproject import mongo
 
 from . import fallback, grounded, llm, openai_compat, providers
 from .models import ChatMessage
@@ -114,15 +115,39 @@ def respond(request, message):
     if result is None:
         result = fallback.reply(message, request.user)
 
-    ChatMessage.objects.create(session_key=session_key, user=user, role=ChatMessage.Role.ASSISTANT,
-                               content=result['reply'])
+    answer = ChatMessage.objects.create(session_key=session_key, user=user, role=ChatMessage.Role.ASSISTANT,
+                                        content=result['reply'])
+    mongo.insert('chats', {
+        'session': session_key, 'message_id': answer.pk, 'user_id': user.pk if user else None,
+        'username': user.username if user else None, 'message': message, 'reply': result['reply'],
+        'engine': label, 'product_ids': result['product_ids'], 'actions': result['actions'],
+        'path': request.headers.get('Referer', ''),
+    })
     return {
+        'id': answer.pk,
         'reply': result['reply'],
         'products': product_cards(result['product_ids']),
         'actions': result['actions'],
         'suggestions': result.get('suggestions', []),
         'assistant': label,
     }
+
+
+def record_feedback(request, message_id, helpful, comment=''):
+    """Store a thumbs up/down on one of this session's assistant replies (SQL and MongoDB)."""
+    answer = conversation(request).filter(pk=message_id, role=ChatMessage.Role.ASSISTANT).first()
+    if answer is None:
+        return False
+    answer.helpful = helpful
+    answer.save(update_fields=['helpful'])
+    question = conversation(request).filter(role=ChatMessage.Role.USER, pk__lt=answer.pk).order_by('-pk').first()
+    user = request.user if request.user.is_authenticated else None
+    mongo.insert('feedback', {
+        'type': 'chat', 'session': answer.session_key, 'message_id': answer.pk, 'helpful': helpful,
+        'comment': comment[:500], 'user_id': user.pk if user else None, 'username': user.username if user else None,
+        'question': question.content if question else '', 'reply': answer.content,
+    })
+    return True
 
 
 def product_cards(product_ids):

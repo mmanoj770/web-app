@@ -1,11 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from cart.cart import Cart
 
-from . import services
+from . import delivery, services
 from .forms import PaymentForm, ShippingForm
 from .models import Order
 
@@ -20,6 +21,13 @@ ORDER_TABS = [
 
 def _orders_with_items():
     return Order.objects.prefetch_related('items__product__images')
+
+
+@require_GET
+def pincode(request, pin):
+    """Delivery estimate and city for a PIN code (India Post, with a local fallback)."""
+    result = delivery.lookup(pin)
+    return JsonResponse(result, status=200 if result['valid'] else 400)
 
 
 @login_required
@@ -68,8 +76,8 @@ def pay(request, pk):
         payment = services.pay_order(order, data['card_number'], method=data['method'], upi_id=data['upi_id'])
         if payment.status == payment.Status.SUCCESS:
             return redirect('orders:success', pk=order.pk)
-        messages.error(request, f'Payment failed: {payment.failure_reason} You can try again, or raise a '
-                                'support ticket if money was deducted.')
+        messages.error(request, f'Payment failed: {payment.failure_reason} (Error {payment.error_code}) You can '
+                                'try again, or raise a support ticket if money was deducted.')
     return render(request, 'orders/pay.html', {'order': order, 'form': form, 'step': 2})
 
 

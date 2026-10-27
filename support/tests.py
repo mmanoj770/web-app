@@ -90,7 +90,8 @@ class HelpCenterTests(TestCase):
 
     def test_help_center(self):
         response = self.client.get(reverse('support:home'))
-        self.assertContains(response, 'How long do refunds take?')
+        # FAQs are loaded by the page from the API.
+        self.assertContains(response, f'data-faq-api="{reverse("api:faqs")}"')
         self.assertContains(response, self.order.number)
 
     def test_wizard_ticket_with_photos_and_default_subject(self):

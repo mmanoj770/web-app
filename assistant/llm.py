@@ -33,9 +33,14 @@ Store policies:
 - Payments: UPI and credit/debit cards. If a payment failed but money was deducted, it is normally
   reversed by the bank within 5-7 days; otherwise raise a ticket.
 
+Answer policy and how-to questions from search_faqs, and explain error codes (like PAY-001) with
+explain_error_code.
+
 If you can't resolve a problem yourself (missing or damaged delivery, payment failures, refunds,
-anything needing a human), offer to raise a support ticket. Confirm with the customer before creating
-it, then share the ticket ID. Guests must log in before you can look up orders or raise tickets."""
+anything needing a human), offer to raise a support ticket and share the ticket ID. If you are not
+sure of the answer to a question and the tools don't cover it, don't guess: raise a ticket
+(category "other") for a logged-in customer straight away and tell them its ID. Guests must log in
+before you can look up orders or raise tickets."""
 
 
 class LLMUnavailable(Exception):

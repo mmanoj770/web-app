@@ -12,7 +12,13 @@ from .models import Order, OrderEvent, OrderItem, Payment
 
 
 class CheckoutError(Exception):
-    pass
+    def __init__(self, message, code=''):
+        super().__init__(message)
+        self.code = code  # Customer-facing error code, e.g. ORD-001.
+
+    def __str__(self):
+        message = super().__str__()
+        return f'{message} (Error {self.code})' if self.code else message
 
 
 @transaction.atomic
@@ -23,7 +29,7 @@ def place_order(user, cart, shipping):
     """
     items = cart.items
     if not items:
-        raise CheckoutError('Your cart is empty.')
+        raise CheckoutError('Your cart is empty.', code='ORD-003')
 
     products = {
         p.pk: p for p in Product.objects.select_for_update().filter(pk__in=items.keys(), is_active=True)
@@ -32,9 +38,9 @@ def place_order(user, cart, shipping):
     for product_id, quantity in items.items():
         product = products.get(int(product_id))
         if product is None:
-            raise CheckoutError('An item in your cart is no longer available.')
+            raise CheckoutError('An item in your cart is no longer available.', code='ORD-002')
         if quantity > product.stock:
-            raise CheckoutError(f'Only {product.stock} of {product.name} left in stock.')
+            raise CheckoutError(f'Only {product.stock} of {product.name} left in stock.', code='ORD-001')
         lines.append((product, quantity))
 
     total = sum((product.price * quantity for product, quantity in lines), Decimal('0'))
@@ -58,7 +64,7 @@ def place_order(user, cart, shipping):
 def pay_order(order, card_number='', method=Payment.Method.CARD, upi_id=''):
     order = Order.objects.select_for_update().get(pk=order.pk)
     if not order.can_pay:
-        raise CheckoutError('This order cannot be paid.')
+        raise CheckoutError('This order cannot be paid.', code='ORD-004')
 
     if method == Payment.Method.UPI:
         result = payments.charge_upi(order.total, upi_id)
@@ -73,6 +79,7 @@ def pay_order(order, card_number='', method=Payment.Method.CARD, upi_id=''):
         card_last4=payments.normalize_card(card_number)[-4:] if method == Payment.Method.CARD else '',
         upi_id=upi_id.strip().lower() if method == Payment.Method.UPI else '',
         failure_reason=result.failure_reason,
+        error_code=result.error_code,
     )
     if result.success:
         # The confirmation email replaces the generic "now: Paid" status email.

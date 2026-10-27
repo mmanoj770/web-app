@@ -8,4 +8,5 @@ urlpatterns = [
     path('chat/', views.chat, name='chat'),
     path('history/', views.history, name='history'),
     path('clear/', views.clear, name='clear'),
+    path('feedback/', views.feedback, name='feedback'),
 ]

@@ -122,6 +122,64 @@ class TicketMessage(models.Model):
         return f'{self.ticket.code} message by {self.author}'
 
 
+class FAQ(models.Model):
+    """A help-center question, served by /api/faqs/ and used by the assistant."""
+
+    class Category(models.TextChoices):
+        ORDERS = 'orders', 'Orders & delivery'
+        PAYMENTS = 'payments', 'Payments & refunds'
+        RETURNS = 'returns', 'Returns & damaged items'
+        ACCOUNT = 'account', 'Account & support'
+
+    category = models.CharField(max_length=20, choices=Category.choices)
+    question = models.CharField(max_length=200)
+    answer = models.TextField()
+    # Extra words customers might use, e.g. "late delayed courier", to help matching.
+    keywords = models.CharField(max_length=255, blank=True)
+    # Offer a ticket of this category alongside the answer (blank: no ticket button).
+    ticket_category = models.CharField(max_length=30, choices=Ticket.Category.choices, blank=True)
+    position = models.PositiveSmallIntegerField(default=0)
+    is_published = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['category', 'position', 'pk']
+        verbose_name = 'FAQ'
+        verbose_name_plural = 'FAQs'
+
+    def __str__(self):
+        return self.question
+
+
+class ErrorCode(models.Model):
+    """A code shown to customers when something fails, e.g. PAY-001 for a declined card."""
+
+    class Area(models.TextChoices):
+        PAYMENTS = 'payments', 'Payments'
+        ORDERS = 'orders', 'Orders & checkout'
+        WEBSITE = 'website', 'Website'
+        ASSISTANT = 'assistant', 'AI assistant'
+        SUPPORT = 'support', 'Support tickets'
+
+    code = models.CharField(max_length=12, unique=True)
+    title = models.CharField(max_length=120)
+    area = models.CharField(max_length=20, choices=Area.choices)
+    http_status = models.PositiveSmallIntegerField(null=True, blank=True)
+    meaning = models.TextField(help_text='What happened, in plain words.')
+    resolution = models.TextField(help_text='What the customer can do about it.')
+    ticket_category = models.CharField(max_length=30, choices=Ticket.Category.choices, blank=True)
+
+    class Meta:
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} {self.title}'
+
+    def save(self, *args, **kwargs):
+        self.code = self.code.upper()
+        super().save(*args, **kwargs)
+
+
 class TicketAttachment(models.Model):
     """A photo the customer or an agent attached, e.g. of a damaged product."""
 

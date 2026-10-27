@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Error codes · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<section class="help-hero">
+  <div class="eyebrow">Help center</div>
+  <h1>Error codes</h1>
+  <p class="muted" style="font-size: 17px">Saw a code like <span class="code-pill">PAY-001</span>? Here's what it means and how to fix it. You can also ask our assistant.</p>
+</section>
+
+<section class="section">
+  {# Loaded from the error code API (/api/error-codes/), which reads the ErrorCode table. #}
+  <div data-error-api="{% url 'api:error_codes' %}" data-ticket-url="{% url 'support:create' %}">
+    <div class="faq-tools">
+      <input class="input" type="search" placeholder="Search codes, e.g. PAY-001 or declined" aria-label="Search error codes" data-error-search>
+    </div>
+    <div class="error-codes" data-error-results aria-live="polite">
+      <div class="faq-empty">Loading error codes…</div>
+    </div>
+    <noscript><p class="muted">Turn on JavaScript to see the error codes, or ask our assistant.</p></noscript>
+  </div>
+</section>
+
+<section class="section">
+  <div class="panel center">
+    <h2>Still stuck?</h2>
+    <p class="muted">Raise a ticket with the error code and what you were doing, and our team will take it from there.</p>
+    <a class="btn btn-primary" href="{% url 'support:create' %}">Raise a ticket</a>
+  </div>
+</section>
+{% endblock %}

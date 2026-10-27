@@ -1,7 +1,8 @@
 {% extends "dashboard/base_dashboard.html" %}
 {% block dashboard %}
 <h1 class="page-title">System status</h1>
-<p class="muted">How each part of the backend is running right now.</p>
+<p class="muted">How each part of the backend is running right now. Uptime monitors can use the public
+  <a href="{% url 'health' %}">/health/</a> endpoint.</p>
 <div class="card">
   {% for check in checks %}
     <div class="list-row">
@@ -20,5 +21,26 @@
   {% for key, value in environment.items %}
     <div class="list-row small"><span class="grow muted">{{ key }}</span><strong>{{ value }}</strong></div>
   {% endfor %}
+</div>
+<div class="card mt-2">
+  <div class="card-head"><h3>Recent requests</h3></div>
+  <p class="small muted" style="padding: 0 24px">The latest requests handled by this server process (static files left out).
+    Every request is also logged as a JSON line to the server log (Vercel → Logs).</p>
+  <div class="table-wrap">
+    <table class="table small">
+      <thead><tr><th>Time (UTC)</th><th>Method</th><th>Path</th><th>Status</th><th>Duration</th><th>User</th></tr></thead>
+      <tbody>
+        {% for r in recent_requests %}
+          <tr>
+            <td>{{ r.time|slice:"11:19" }}</td><td>{{ r.method }}</td><td style="word-break: break-all">{{ r.path }}</td>
+            <td><span class="pill tone-{% if r.status >= 500 %}red{% elif r.status >= 400 %}orange{% else %}green{% endif %}">{{ r.status }}</span></td>
+            <td>{{ r.duration_ms }} ms</td><td>{{ r.user|default:"guest" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="muted">No requests yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}

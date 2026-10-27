@@ -1,6 +1,21 @@
 from django.contrib import admin
 
-from .models import Ticket, TicketAttachment, TicketMessage
+from .models import FAQ, ErrorCode, Ticket, TicketAttachment, TicketMessage
+
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ('question', 'category', 'position', 'is_published', 'updated_at')
+    list_editable = ('position', 'is_published')
+    list_filter = ('category', 'is_published')
+    search_fields = ('question', 'answer', 'keywords')
+
+
+@admin.register(ErrorCode)
+class ErrorCodeAdmin(admin.ModelAdmin):
+    list_display = ('code', 'title', 'area', 'http_status', 'ticket_category')
+    list_filter = ('area',)
+    search_fields = ('code', 'title', 'meaning')
 
 
 class TicketMessageInline(admin.TabularInline):

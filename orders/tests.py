@@ -104,9 +104,11 @@ class CheckoutTests(TestCase):
         order, _ = self._place_order()
         response = self.client.post(reverse('orders:pay', args=[order.pk]), DECLINED_CARD)
         self.assertContains(response, 'declined')
+        self.assertContains(response, 'Error PAY-001')
         order.refresh_from_db()
         self.assertEqual(order.status, Order.Status.PENDING)
         self.assertEqual(order.payments.get().status, Payment.Status.FAILED)
+        self.assertEqual(order.payments.get().error_code, 'PAY-001')
 
     def test_invalid_card_number_is_rejected(self):
         order, _ = self._place_order()

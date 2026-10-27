@@ -1,9 +1,13 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Count, Q
 from django.utils import timezone
+
+from myproject import mongo
 
 from .models import Ticket, TicketAttachment, TicketMessage
 
@@ -111,7 +115,41 @@ def record_feedback(ticket, rating, comment=''):
     ticket.csat_rating = rating
     ticket.csat_comment = comment
     ticket.save(update_fields=['csat_rating', 'csat_comment', 'updated_at'])
+    mongo.insert('feedback', {
+        'type': 'ticket', 'ticket_id': ticket.code, 'rating': rating, 'comment': comment,
+        'category': ticket.category, 'user_id': ticket.customer_id, 'username': ticket.customer.username,
+        'agent': ticket.assigned_to.username if ticket.assigned_to else None,
+    })
     return ticket
+
+
+@transaction.atomic
+def delete_ticket(ticket):
+    for attachment in ticket.attachments.all():
+        attachment.file.delete(save=False)
+    ticket.delete()
+
+
+def escalate_from_assistant(customer, message):
+    """Open a ticket for a question the assistant couldn't answer.
+
+    Follow-up questions within 30 minutes are added to the same ticket instead
+    of opening new ones. Returns (ticket, created).
+    """
+    recent = customer.tickets.filter(
+        source=Ticket.Source.ASSISTANT, status__in=Ticket.ACTIVE_STATUSES,
+        created_at__gte=timezone.now() - timedelta(minutes=30),
+    ).first()
+    if recent:
+        add_message(recent, customer, message)
+        return recent, False
+    subject = message if len(message) <= 80 else message[:77].rsplit(' ', 1)[0] + '...'
+    ticket = create_ticket(
+        customer=customer, category=Ticket.Category.OTHER, subject=f'Question: {subject}',
+        description=f'{message}\n\n(Raised automatically: the AI assistant was not sure how to answer.)',
+        source=Ticket.Source.ASSISTANT,
+    )
+    return ticket, True
 
 
 def _save_attachments(ticket, files, uploaded_by, message=None):

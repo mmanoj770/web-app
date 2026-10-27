@@ -9,6 +9,7 @@ from decimal import Decimal, InvalidOperation
 from catalog.models import Category, Product
 from catalog.views import search_products as catalog_search
 from orders.models import Order
+from support import lookup
 from support import services as support_services
 from support.models import Ticket
 
@@ -143,6 +144,20 @@ def create_support_ticket(user, category, subject, description, order_number=Non
     return {'ticket_id': ticket.code, 'status': ticket.get_status_display(), 'url': ticket.get_absolute_url()}
 
 
+def search_faqs(user, query):
+    faqs = lookup.search_faqs(query, limit=3)
+    if not faqs:
+        return {'faqs': [], 'note': 'No FAQ matches. If you cannot answer, raise a support ticket.'}
+    return {'faqs': [{'question': f.question, 'answer': f.answer} for f in faqs]}
+
+
+def explain_error_code(user, code):
+    found, error = lookup.find_error_code(code)
+    if error is None:
+        return {'error': f'Unknown error code {found or code}.'}
+    return lookup.error_code_data(error)
+
+
 # Tool definitions for the Claude Messages API, in a fixed order.
 TOOL_SPECS = [
     {
@@ -201,8 +216,9 @@ TOOL_SPECS = [
     {
         'name': 'create_support_ticket',
         'description': (
-            'Raise a support ticket for a human agent. Only call this after the customer has '
-            'agreed to raise a ticket, and include the details they gave you in the description.'
+            'Raise a support ticket for a human agent, with the details the customer gave you in the '
+            'description. Use it when the customer asks for help a person must give, or when you cannot '
+            'answer their question from the other tools.'
         ),
         'input_schema': {
             'type': 'object',
@@ -215,6 +231,25 @@ TOOL_SPECS = [
             'required': ['category', 'subject', 'description'],
         },
     },
+    {
+        'name': 'search_faqs',
+        'description': ("Search the store's FAQs (delivery, payments, refunds, returns, warranty, support). "
+                        'Use it for any policy or how-to question and answer from the results.'),
+        'input_schema': {
+            'type': 'object',
+            'properties': {'query': {'type': 'string', 'description': "The customer's question."}},
+            'required': ['query'],
+        },
+    },
+    {
+        'name': 'explain_error_code',
+        'description': 'Explain an error code the customer saw, such as PAY-001 or WEB-500, and how to fix it.',
+        'input_schema': {
+            'type': 'object',
+            'properties': {'code': {'type': 'string', 'description': 'The code, e.g. PAY-001.'}},
+            'required': ['code'],
+        },
+    },
 ]
 
 HANDLERS = {
@@ -225,6 +260,8 @@ HANDLERS = {
     'get_order_status': get_order_status,
     'get_my_tickets': get_my_tickets,
     'create_support_ticket': create_support_ticket,
+    'search_faqs': search_faqs,
+    'explain_error_code': explain_error_code,
 }
 
 

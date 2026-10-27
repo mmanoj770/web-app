@@ -128,7 +128,8 @@ class SystemStatusTests(TestCase):
         with self.settings(LLM_PROVIDER='none'):
             response = self.client.get(reverse('dashboard:system'))
         names = [c['name'] for c in response.context['checks']]
-        self.assertEqual(names, ['Database', 'AI assistant', 'Email', 'Payments', 'File storage', 'Cache'])
+        self.assertEqual(names, ['Database', 'AI assistant', 'Email', 'MongoDB', 'Payments', 'File storage',
+                                 'Cache'])
         self.assertTrue(response.context['checks'][0]['ok'])
         self.assertContains(response, 'Rule-based assistant')
 

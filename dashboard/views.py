@@ -321,6 +321,18 @@ def system_status(request):
         add('Email', True, f'{backend.upper()} backend', 'Order and ticket emails are sent to customers. '
             f'New-order alerts: {alerts}.')
 
+    # MongoDB (chat transcripts and feedback).
+    from myproject import mongo
+
+    mongo_ok, mongo_detail = mongo.ping()
+    if mongo_ok is None:
+        add('MongoDB', True, 'Not configured', 'Set MONGODB_URI to store chats and feedback in MongoDB. Chats are '
+            'kept in the SQL database meanwhile.', 'fallback')
+    else:
+        stored = ', '.join(f'{n} {name}' for name, n in mongo.counts().items())
+        add('MongoDB', bool(mongo_ok), f'{settings.MONGODB_DB} database' if mongo_ok else 'Unreachable',
+            f'{stored or "No documents yet"} · {mongo_detail}')
+
     # Payments.
     add('Payments', True, 'Simulated gateway (UPI and cards)',
         'No real money moves. Replace orders/payments.py with Razorpay or Stripe to take real payments.', 'demo')
@@ -339,8 +351,11 @@ def system_status(request):
     cache_name = settings.CACHES['default']['BACKEND'].rsplit('.', 1)[-1] if hasattr(settings, 'CACHES') else ''
     add('Cache', cache_ok, cache_name or 'Local memory', 'Used for the AI chat rate limit.')
 
+    from myproject.observability import RECENT_REQUESTS
+
     return render(request, 'dashboard/system_status.html', {
         'checks': checks,
+        'recent_requests': list(RECENT_REQUESTS)[:50],
         'environment': {
             'Django': django.get_version(),
             'Python': platform.python_version(),

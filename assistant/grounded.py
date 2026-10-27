@@ -14,6 +14,7 @@ from decimal import Decimal
 from django.conf import settings
 
 from catalog.models import Product
+from support import lookup
 
 from . import fallback, tools
 from .llm import LLMUnavailable
@@ -94,6 +95,12 @@ def gather(message, user):
     }
     if product_ids:
         facts['products'] = _product_facts(product_ids)
+    faqs = lookup.search_faqs(text, limit=2)
+    if faqs:
+        facts['faqs'] = [{'question': f.question, 'answer': f.answer} for f in faqs]
+    _code, error = lookup.find_error_code(message)
+    if error:
+        facts['error_code'] = lookup.error_code_data(error)
     if ORDER_WORDS.search(text):
         orders = tools.get_my_orders(user)
         facts['orders'] = orders.get('orders') or orders.get('error') or 'No orders yet.'

@@ -4,7 +4,10 @@
 <div class="card empty">
   <i class="bi bi-shield-lock"></i>
   <h2>You don't have access to this page</h2>
-  <p class="muted">If you think this is a mistake, contact your store administrator.</p>
-  <a class="btn btn-primary" href="{% url 'catalog:home' %}">Back to the store</a>
+  <p class="muted">Error <a class="code-pill" href="{% url 'support:error_codes' %}#WEB-403">WEB-403</a>: if you think this is a mistake, contact your store administrator.</p>
+  <div class="row" style="justify-content:center; flex-wrap: wrap">
+    <a class="btn btn-primary" href="{% url 'catalog:home' %}">Back to the store</a>
+    <button class="btn btn-white" type="button" data-ask="What does error WEB-403 mean?"><i class="bi bi-stars"></i> Ask assistant</button>
+  </div>
 </div>
 {% endblock %}

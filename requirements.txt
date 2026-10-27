@@ -3,3 +3,4 @@ anthropic~=1.9
 Pillow~=12.1
 whitenoise~=6.12
 psycopg[binary]~=3.3
+pymongo~=4.15

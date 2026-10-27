@@ -1,6 +1,7 @@
 from datetime import date
 
 from django import forms
+from django.urls import reverse_lazy
 
 from .models import Order, Payment
 
@@ -12,7 +13,9 @@ class ShippingForm(forms.ModelForm):
         labels = {'address_line': 'Address (house no., street, area)', 'postal_code': 'PIN code'}
         widgets = {
             'phone': forms.TextInput(attrs={'inputmode': 'tel', 'autocomplete': 'tel'}),
-            'postal_code': forms.TextInput(attrs={'inputmode': 'numeric', 'autocomplete': 'postal-code'}),
+            # app.js looks the PIN code up (city + delivery date) via /api/pincode/.
+            'postal_code': forms.TextInput(attrs={'inputmode': 'numeric', 'autocomplete': 'postal-code',
+                                                  'data-pincode-lookup': reverse_lazy('api:pincode', args=['000000'])}),
         }
 
     def clean_postal_code(self):

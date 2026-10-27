@@ -28,7 +28,8 @@ def _rate_limited(request):
 @require_POST
 def chat(request):
     if _rate_limited(request):
-        return JsonResponse({'error': "You're sending messages too quickly. Please wait a minute."}, status=429)
+        return JsonResponse({'error': "You're sending messages too quickly. Please wait a minute. (Error AI-429)",
+                             'code': 'AI-429'}, status=429)
     try:
         message = json.loads(request.body).get('message', '')
     except (ValueError, AttributeError):
@@ -43,7 +44,8 @@ def chat(request):
 def history(request):
     messages = services.conversation(request).order_by('-created_at', '-pk')[:30]
     return JsonResponse({
-        'messages': [{'role': m.role, 'content': m.content} for m in reversed(messages)],
+        'messages': [{'id': m.pk, 'role': m.role, 'content': m.content, 'helpful': m.helpful}
+                     for m in reversed(messages)],
         'assistant': services.assistant_label(),
     })
 
@@ -51,4 +53,19 @@ def history(request):
 @require_POST
 def clear(request):
     services.conversation(request).delete()
+    return JsonResponse({'ok': True})
+
+
+@require_POST
+def feedback(request):
+    """Thumbs up/down on an assistant reply: {"id": <message id>, "helpful": true|false, "comment": ""}."""
+    try:
+        data = json.loads(request.body)
+        message_id, helpful = int(data['id']), data['helpful']
+    except (ValueError, KeyError, TypeError):
+        return JsonResponse({'error': 'Send {"id": ..., "helpful": true|false}.'}, status=400)
+    if not isinstance(helpful, bool):
+        return JsonResponse({'error': 'helpful must be true or false.'}, status=400)
+    if not services.record_feedback(request, message_id, helpful, str(data.get('comment', ''))):
+        return JsonResponse({'error': 'Message not found in this conversation.'}, status=404)
     return JsonResponse({'ok': True})

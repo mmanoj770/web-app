@@ -469,25 +469,150 @@
     }
   });
 
-  /* ---------- Delivery date by PIN code ---------- */
+  /* ---------- Delivery date by PIN code (India Post API via /api/pincode/, local estimate fallback) ---------- */
   const METRO_PREFIXES = ['11', '40', '56', '60', '70', '50', '41', '38'];
+  const localEstimate = (pin) => {
+    const days = METRO_PREFIXES.includes(pin.slice(0, 2)) ? 3 : 6;
+    const date = new Date();
+    let added = 0;
+    while (added < days) { date.setDate(date.getDate() + 1); if (date.getDay() !== 0) added += 1; }
+    const label = date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+    return { valid: true, message: `Free delivery by ${label}`, city: '', source: 'estimate' };
+  };
+  async function lookupPin(url, pin) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 6000);
+    try {
+      const res = await fetch(url.replace('000000', pin), { signal: controller.signal });
+      return await res.json();
+    } catch (e) {
+      return localEstimate(pin); // Server unreachable: same estimate the server would fall back to.
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   $$('[data-pincode]').forEach((form) => {
     const out = $('[data-pincode-result]', form.parentElement);
     let saved = null;
     try { saved = window.localStorage.getItem('pincode'); } catch (e) { /* storage unavailable */ }
     const input = $('input', form);
-    const check = (pin) => {
-      if (!/^\d{6}$/.test(pin)) { out.innerHTML = '<span class="error">Enter a valid 6-digit PIN code</span>'; return; }
-      const days = METRO_PREFIXES.includes(pin.slice(0, 2)) ? 3 : 6;
-      const date = new Date();
-      let added = 0;
-      while (added < days) { date.setDate(date.getDate() + 1); if (date.getDay() !== 0) added += 1; }
-      const label = date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
-      out.innerHTML = `<i class="bi bi-truck"></i> Delivery by <strong>${label}</strong> · <span class="off">Free</span>`;
+    const check = async (pin) => {
+      if (!/^[1-9]\d{5}$/.test(pin)) { out.innerHTML = '<span class="error">Enter a valid 6-digit PIN code</span>'; return; }
+      out.innerHTML = '<i class="bi bi-truck"></i> Checking…';
+      const data = await lookupPin(form.dataset.pincodeUrl, pin);
+      if (!data.valid) { out.innerHTML = `<span class="error">${escapeHtml(data.message)}</span>`; return; }
+      out.innerHTML = `<i class="bi bi-truck"></i> ${escapeHtml(data.message)} · <span class="off">Free</span>`;
       try { window.localStorage.setItem('pincode', pin); } catch (e) { /* storage unavailable */ }
     };
     form.addEventListener('submit', (e) => { e.preventDefault(); check(input.value.trim()); });
     if (saved) { input.value = saved; check(saved); }
+  });
+
+  // Checkout: fill in the city from the PIN code and show the delivery date.
+  $$('input[data-pincode-lookup]').forEach((input) => {
+    const city = input.form && input.form.elements.city;
+    const hint = document.createElement('div');
+    hint.className = 'small mt-1';
+    input.insertAdjacentElement('afterend', hint);
+    let filled = '';
+    const check = async () => {
+      const pin = input.value.trim();
+      if (!/^\d{6}$/.test(pin)) { hint.textContent = ''; return; }
+      const data = await lookupPin(input.dataset.pincodeLookup, pin);
+      if (!data.valid) { hint.innerHTML = `<span class="error">${escapeHtml(data.message)}</span>`; return; }
+      hint.innerHTML = `<i class="bi bi-truck"></i> ${escapeHtml(data.message)}`;
+      if (city && data.city && (!city.value.trim() || city.value === filled)) {
+        city.value = data.city;
+        filled = data.city;
+      }
+    };
+    input.addEventListener('input', check);
+    if (input.value) check();
+  });
+
+  /* ---------- FAQs from /api/faqs/ ---------- */
+  $$('[data-faq-api]').forEach((root) => {
+    const results = $('[data-faq-results]', root);
+    const chips = $('[data-faq-categories]', root);
+    const search = $('[data-faq-search]', root);
+    let category = '';
+    let timer = null;
+    const render = (data) => {
+      if (!data.results.length) {
+        results.innerHTML = `<div class="faq-empty" style="grid-column: 1 / -1">No FAQs match.
+          <button class="btn btn-white btn-sm" type="button" data-ask="${escapeHtml(search.value || 'I have a question')}"><i class="bi bi-stars"></i> Ask AI</button></div>`;
+        return;
+      }
+      // Groups follow the category order from the API; searches keep the best match first.
+      const groups = new Map(search.value.trim() ? [] : data.categories.map((c) => [c.label, []]));
+      data.results.forEach((f) => {
+        if (!groups.has(f.category_label)) groups.set(f.category_label, []);
+        groups.get(f.category_label).push(f);
+      });
+      results.innerHTML = Array.from(groups).filter(([, faqs]) => faqs.length).map(([label, faqs]) => `
+        <div class="card faq">
+          <div class="card-head"><h3>${escapeHtml(label)}</h3></div>
+          ${faqs.map((f) => `<details><summary>${escapeHtml(f.question)}</summary><p>${escapeHtml(f.answer)}</p></details>`).join('')}
+        </div>`).join('');
+      if (search.value.trim()) $('details', results)?.setAttribute('open', '');
+    };
+    const load = async () => {
+      const params = new URLSearchParams();
+      if (search.value.trim()) params.set('q', search.value.trim());
+      if (category) params.set('category', category);
+      try {
+        const res = await fetch(`${root.dataset.faqApi}?${params}`);
+        const data = await res.json();
+        if (!chips.children.length) {
+          chips.innerHTML = [{ key: '', label: 'All' }, ...data.categories].map((c) =>
+            `<button class="chip${c.key === category ? ' active' : ''}" type="button" data-key="${escapeHtml(c.key)}">${escapeHtml(c.label)}</button>`).join('');
+        }
+        render(data);
+      } catch (e) {
+        results.innerHTML = '<div class="faq-empty">Could not load FAQs. Please refresh, or ask our assistant.</div>';
+      }
+    };
+    chips.addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      category = chip.dataset.key;
+      $$('.chip', chips).forEach((c) => c.classList.toggle('active', c === chip));
+      load();
+    });
+    search.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(load, 250); });
+    load();
+  });
+
+  /* ---------- Error codes from /api/error-codes/ ---------- */
+  $$('[data-error-api]').forEach(async (root) => {
+    const results = $('[data-error-results]', root);
+    const search = $('[data-error-search]', root);
+    let codes = [];
+    const render = () => {
+      const q = search.value.trim().toLowerCase();
+      const shown = codes.filter((c) => !q || `${c.code} ${c.title} ${c.meaning} ${c.area_label}`.toLowerCase().includes(q));
+      results.innerHTML = shown.length ? shown.map((c) => `
+        <article class="card" id="${escapeHtml(c.code)}">
+          <div class="row-between"><span class="code-pill">${escapeHtml(c.code)}</span><span class="xsmall muted">${escapeHtml(c.area_label)}</span></div>
+          <h3>${escapeHtml(c.title)}</h3>
+          <p><strong>What happened:</strong> ${escapeHtml(c.meaning)}</p>
+          <p><strong>What to do:</strong> ${escapeHtml(c.resolution)}</p>
+          <div class="row mt-2" style="flex-wrap: wrap">
+            <button class="btn btn-white btn-sm" type="button" data-ask="What does error ${escapeHtml(c.code)} mean?"><i class="bi bi-stars"></i> Ask AI</button>
+            ${c.ticket_category ? `<a class="btn btn-outline btn-sm" href="${root.dataset.ticketUrl}?category=${encodeURIComponent(c.ticket_category)}">Raise a ticket</a>` : ''}
+          </div>
+        </article>`).join('') : '<div class="faq-empty">No error codes match.</div>';
+    };
+    try {
+      const res = await fetch(root.dataset.errorApi);
+      codes = (await res.json()).results;
+      render();
+      if (window.location.hash) document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
+    } catch (e) {
+      results.innerHTML = '<div class="faq-empty">Could not load error codes. Please refresh, or ask our assistant.</div>';
+    }
+    search.addEventListener('input', render);
   });
 
   /* ---------- Canned replies (dashboard) ---------- */

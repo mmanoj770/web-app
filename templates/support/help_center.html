@@ -59,16 +59,20 @@
 {% endif %}
 
 <section class="section" id="faq">
-  <div class="section-head"><h2>Frequently asked questions</h2></div>
-  <div class="two-col">
-    {% for group, items in faqs %}
-      <div class="card faq reveal" {% if forloop.last %}style="grid-column: 1 / -1"{% endif %}>
-        <div class="card-head"><h3>{{ group }}</h3></div>
-        {% for question, answer in items %}
-          <details><summary>{{ question }}</summary><p>{{ answer }}</p></details>
-        {% endfor %}
-      </div>
-    {% endfor %}
+  <div class="section-head">
+    <h2>Frequently asked questions</h2>
+    <a class="small" href="{% url 'support:error_codes' %}">Saw an error code? Look it up <i class="bi bi-arrow-right"></i></a>
+  </div>
+  {# Loaded from the FAQ API (/api/faqs/), which reads the FAQ table. #}
+  <div data-faq-api="{% url 'api:faqs' %}">
+    <div class="faq-tools">
+      <input class="input" type="search" placeholder="Search FAQs, e.g. refund, warranty, UPI" aria-label="Search FAQs" data-faq-search>
+      <div class="chips" data-faq-categories></div>
+    </div>
+    <div class="two-col" data-faq-results aria-live="polite">
+      <div class="faq-empty">Loading FAQs…</div>
+    </div>
+    <noscript><p class="muted">Turn on JavaScript to see the FAQs, or ask our assistant.</p></noscript>
   </div>
 </section>
 

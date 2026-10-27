@@ -7,36 +7,6 @@ from . import services
 from .forms import FeedbackForm, ReplyForm, TicketForm
 from .models import Ticket
 
-# Self-service answers shown in the help center before customers raise a ticket.
-FAQS = [
-    ('Orders & delivery', [
-        ('When will my order arrive?',
-         'Orders are delivered in 3-5 business days in metro cities and 5-8 days elsewhere. '
-         'You can follow every step from My orders.'),
-        ('Can I change my delivery address?',
-         'You can cancel an unpaid order and place it again with the new address. For paid orders, raise a '
-         'ticket and we will try to update it before it ships.'),
-        ('My order shows delivered but I have not received it',
-         'Check with neighbours or your building security first. If it is still missing, raise a '
-         '"Missing / late delivery" ticket and we will investigate with the courier.'),
-    ]),
-    ('Payments & refunds', [
-        ('Money was deducted but the payment failed',
-         'Failed payments are usually reversed by your bank automatically within 5-7 business days. If it has '
-         'been longer, raise a "Payment failure" ticket with the order number.'),
-        ('How long do refunds take?',
-         'Approved refunds go back to your original payment method within 5-7 business days.'),
-        ('Which payment methods do you accept?', 'UPI and all major credit and debit cards.'),
-    ]),
-    ('Returns & damaged items', [
-        ('What is the return policy?',
-         'You can return damaged, defective or wrong items within 7 days of delivery.'),
-        ('My product arrived damaged',
-         'Sorry about that! Raise a "Damaged or wrong product" ticket and attach photos of the item and the '
-         'box so we can arrange a replacement quickly.'),
-    ]),
-]
-
 QUICK_HELP = [
     ('missing_delivery', 'truck', 'Where is my order?', 'Track it or report a missing delivery'),
     ('payment_failure', 'credit-card', 'Payment issue', 'Failed or double charged'),
@@ -48,11 +18,17 @@ QUICK_HELP = [
 
 
 def help_center(request):
-    context = {'faqs': FAQS, 'quick_help': QUICK_HELP}
+    # FAQs are loaded by the page from /api/faqs/.
+    context = {'quick_help': QUICK_HELP}
     if request.user.is_authenticated:
         context['recent_orders'] = request.user.orders.prefetch_related('items__product__images')[:3]
         context['open_tickets'] = request.user.tickets.filter(status__in=Ticket.ACTIVE_STATUSES)[:3]
     return render(request, 'support/help_center.html', context)
+
+
+def error_codes(request):
+    """Error code reference, loaded by the page from /api/error-codes/."""
+    return render(request, 'support/error_codes.html')
 
 
 @login_required

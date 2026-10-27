@@ -17,6 +17,8 @@ class ChatMessage(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     role = models.CharField(max_length=10, choices=Role.choices)
     content = models.TextField()
+    # The customer's thumbs up (True) or down (False) on an assistant reply.
+    helpful = models.BooleanField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

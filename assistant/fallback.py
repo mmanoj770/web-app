@@ -1,9 +1,11 @@
 """Rule-based assistant used when no LLM is configured or the API is unavailable.
 
 It covers the core journeys (product search with a budget, order tracking,
-policies and escalation to a ticket) with keyword matching, corrects common
-typos, and asks a follow-up question with tappable suggestions when a request
-is too vague to act on.
+FAQs from the database, error codes such as PAY-001, and escalation to a
+ticket) with keyword matching, corrects common typos, and asks a follow-up
+question with tappable suggestions when a request is too vague to act on.
+When it can't answer a real question, it opens a support ticket for
+logged-in customers.
 """
 import difflib
 import re
@@ -13,6 +15,8 @@ from django.urls import reverse
 
 from catalog.models import Category, Product
 from catalog.templatetags.store_tags import money
+from support import lookup
+from support import services as support_services
 
 from . import tools
 
@@ -166,8 +170,58 @@ def _recent_orders_line(user):
     return line + '.'
 
 
+# Messages about the customer's own orders or tickets, which need their data rather than an FAQ.
+PERSONAL_RE = re.compile(r'\b(where is my|my orders?\b|my tickets?\b|ord-?\s*\d)')
+
+
+def explain_error(code, error, user):
+    """Reply for a message that mentions an error code like PAY-001."""
+    result = {'reply': '', 'product_ids': [], 'actions': [], 'suggestions': []}
+    if error is None:
+        return unsure(f'What does error {code} mean?', user,
+                      intro=f"I don't have details for error **{code}** yet.")
+    result['reply'] = (f'**{error.code}: {error.title}**\n'
+                       f'- What happened: {error.meaning}\n- What to do: {error.resolution}')
+    if error.ticket_category:
+        result['actions'].append(_ticket_action(error.ticket_category))
+    result['actions'].append({'label': 'All error codes', 'url': reverse('support:error_codes')})
+    return result
+
+
+def faq_answer(faq):
+    result = {'reply': faq.answer, 'product_ids': [], 'actions': [], 'suggestions': []}
+    if faq.ticket_category:
+        result['actions'].append(_ticket_action(faq.ticket_category))
+    return result
+
+
+def unsure(message, user, intro="I'm not sure about that one."):
+    """When the assistant can't answer: open a ticket for logged-in customers so a person follows up."""
+    result = {'reply': '', 'product_ids': [], 'actions': [], 'suggestions': []}
+    if not user.is_authenticated:
+        result['reply'] = (f'{intro} Log in and I can pass your question to our support team, '
+                           'or raise a ticket and an agent will reply.')
+        result['actions'] = [{'label': 'Log in', 'url': reverse('login')}, _ticket_action()]
+        return result
+    ticket, created = support_services.escalate_from_assistant(user, message)
+    if created:
+        result['reply'] = (f"{intro} I've passed your question to our support team as ticket **{ticket.code}**. "
+                           "They'll reply by email and on the ticket page, usually within 24 hours.")
+    else:
+        result['reply'] = (f"{intro} I've added this to your open ticket **{ticket.code}** so our support "
+                           'team sees it.')
+    result['actions'] = [{'label': f'View ticket {ticket.code}', 'url': ticket.get_absolute_url()}]
+    return result
+
+
+def _is_real_question(text):
+    """At least three words, two of them real-looking words: not "kjh" or "ok"."""
+    words = re.findall(r'[a-z]+', text)
+    return len(text.split()) >= 3 and sum(1 for w in words if len(w) >= 3 and re.search(r'[aeiou]', w)) >= 2
+
+
 def reply(message, user):
-    """Return {"reply", "product_ids", "actions"} for a customer message."""
+    """Return {"reply", "product_ids", "actions", "suggestions"} for a customer message."""
     text = correct_spelling(message.lower().strip())
     result = {'reply': '', 'product_ids': [], 'actions': [], 'suggestions': []}
 
@@ -197,6 +251,10 @@ def reply(message, user):
         result['suggestions'] = START_SUGGESTIONS
         return result
 
+    code, error = lookup.find_error_code(message)
+    if code:
+        return explain_error(code, error, user)
+
     if re.search(r'\bcancel(?!l?ing)', text):
         result['reply'] = ('You can cancel an order from **My orders** while it is still awaiting payment. '
                            'Once it has been paid or shipped, raise a ticket and our team will help.')
@@ -208,6 +266,11 @@ def reply(message, user):
                            'new address. For future orders, update it in your profile.')
         result['actions'] = [_ticket_action('other'), {'label': 'Update profile', 'url': reverse('accounts:profile')}]
         return result
+
+    if not PERSONAL_RE.search(text):
+        faq = lookup.best_faq(text)
+        if faq:
+            return faq_answer(faq)
 
     for category, phrases in ISSUE_KEYWORDS.items():
         if any(p in text for p in phrases):
@@ -285,6 +348,11 @@ def reply(message, user):
                            '- Refunds: back to your original payment method within 5-7 business days.')
         return result
 
+    if not _has_product_signal(text):
+        faq = lookup.best_faq(text, strict=False)
+        if faq:
+            return faq_answer(faq)
+
     if 'categor' in text or 'what do you sell' in text:
         names = [c['name'] for c in tools.list_categories(user)['categories']]
         result['reply'] = 'We sell: ' + ', '.join(names) + '. What are you shopping for?'
@@ -300,6 +368,8 @@ def reply(message, user):
 
     # Default: a product search, if the message is about products.
     if not _has_product_signal(text) and not re.search(r'\b(recommend|suggest|buy|show|best|want)\b', text):
+        if _is_real_question(text):
+            return unsure(message.strip(), user)
         result['reply'] = ("Sorry, I didn't quite get that. I can help you find a product, track an order "
                            'or sort out a problem. Which would you like?')
         result['suggestions'] = START_SUGGESTIONS
