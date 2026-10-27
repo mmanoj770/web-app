@@ -103,6 +103,7 @@
       {% endfor %}
       <a href="{% url 'catalog:product_list' %}?sort=discount"><i class="bi bi-lightning-charge"></i> Top deals</a>
       <a href="{% url 'support:home' %}"><i class="bi bi-life-preserver"></i> Help center</a>
+      <a href="{% url 'support:faq' %}"><i class="bi bi-question-circle"></i> FAQ</a>
       <a href="#" class="ai" data-ask="Help me find the right product"><i class="bi bi-stars"></i> Ask AI</a>
     </div>
   </div>
@@ -130,7 +131,8 @@
         <a href="{% url 'support:home' %}">Help center</a>
         <a href="{% url 'support:create' %}">Raise a ticket</a>
         <a href="{% url 'orders:list' %}">Track your order</a>
-        <a href="{% url 'support:home' %}#faq">Returns &amp; refunds</a>
+        <a href="{% url 'support:faq' %}">FAQ</a>
+        <a href="{% url 'support:error_codes' %}">Error codes</a>
       </div>
       <div>
         <h4>Account</h4>

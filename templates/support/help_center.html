@@ -61,19 +61,9 @@
 <section class="section" id="faq">
   <div class="section-head">
     <h2>Frequently asked questions</h2>
-    <a class="small" href="{% url 'support:error_codes' %}">Saw an error code? Look it up <i class="bi bi-arrow-right"></i></a>
+    <span class="small"><a href="{% url 'support:faq' %}">All FAQs</a> · <a href="{% url 'support:error_codes' %}">Error codes <i class="bi bi-arrow-right"></i></a></span>
   </div>
-  {# Loaded from the FAQ API (/api/faqs/), which reads the FAQ table. #}
-  <div data-faq-api="{% url 'api:faqs' %}">
-    <div class="faq-tools">
-      <input class="input" type="search" placeholder="Search FAQs, e.g. refund, warranty, UPI" aria-label="Search FAQs" data-faq-search>
-      <div class="chips" data-faq-categories></div>
-    </div>
-    <div class="two-col" data-faq-results aria-live="polite">
-      <div class="faq-empty">Loading FAQs…</div>
-    </div>
-    <noscript><p class="muted">Turn on JavaScript to see the FAQs, or ask our assistant.</p></noscript>
-  </div>
+  {% include "support/_faq_list.html" %}
 </section>
 
 <section class="section">

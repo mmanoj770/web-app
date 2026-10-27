@@ -7,7 +7,7 @@
   <p class="muted">Error <a class="code-pill" href="{% url 'support:error_codes' %}#WEB-500">WEB-500</a>: the server hit an unexpected error. It has been logged for our team{% if request.request_id %} (reference <span class="code-pill">{{ request.request_id }}</span>){% endif %}. Please try again in a minute.</p>
   <div class="row" style="justify-content:center; flex-wrap: wrap">
     <a class="btn btn-primary" href="{% url 'catalog:home' %}">Back to the store</a>
-    <button class="btn btn-white" type="button" data-ask="I got error WEB-500. What should I do?"><i class="bi bi-stars"></i> Ask assistant</button>
+    <button class="btn btn-white" type="button" data-ask="I got error WEB-500. What should I do?"><i class="bi bi-stars"></i> Ask the assistant</button>
   </div>
 </div>
 {% endblock %}

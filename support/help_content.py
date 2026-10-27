@@ -94,6 +94,12 @@ ERROR_CODES = [
      'The order was already paid or was cancelled, so it cannot be paid again.',
      'Check the order status in My orders. If you were charged twice, raise a payment ticket.',
      'payment_failure'),
+    ('WEB-400', 'Bad request', 'website', 400,
+     'The request was missing information or had something in the wrong format, e.g. an invalid PIN code.',
+     'Check what you entered and try again. If it keeps happening, refresh the page.', ''),
+    ('WEB-401', 'Sign-in required', 'website', 401,
+     'This needs you to be signed in, or your session has expired.',
+     'Sign in and try again. You stay signed in for two weeks on the same device.', ''),
     ('WEB-403', 'Access denied', 'website', 403,
      'Your account does not have permission to open this page.',
      'Log in with the right account. Staff pages need an agent or admin account.', ''),
@@ -104,26 +110,30 @@ ERROR_CODES = [
      'The server hit an unexpected error while loading the page. It has been logged for our team.',
      'Refresh the page in a minute. If it keeps happening, raise a ticket and mention what you were doing.',
      'other'),
+    ('WEB-503', 'Service unavailable', 'website', 503,
+     'A service the site depends on (such as the database) is temporarily unavailable or under maintenance.',
+     'Wait a minute and try again. You can check the live status at /health/.', 'other'),
     ('AI-429', 'Too many messages', 'assistant', 429,
      'You sent more chat messages in a minute than the assistant allows.',
      'Wait a minute and send your message again.', ''),
 ]
 
 
-def load(apps=None):
-    """Create or update the starting FAQs and error codes (safe to run more than once)."""
+def load(apps=None, only_missing=False):
+    """Create the starting FAQs and error codes; existing ones are updated unless only_missing is set."""
     if apps is None:
         from .models import FAQ, ErrorCode
     else:
         FAQ = apps.get_model('support', 'FAQ')
         ErrorCode = apps.get_model('support', 'ErrorCode')
+    save = 'get_or_create' if only_missing else 'update_or_create'
     for position, (category, question, answer, keywords, ticket_category) in enumerate(FAQS):
-        FAQ.objects.update_or_create(question=question, defaults={
+        getattr(FAQ.objects, save)(question=question, defaults={
             'category': category, 'answer': answer, 'keywords': keywords,
             'ticket_category': ticket_category, 'position': position,
         })
     for code, title, area, http_status, meaning, resolution, ticket_category in ERROR_CODES:
-        ErrorCode.objects.update_or_create(code=code, defaults={
+        getattr(ErrorCode.objects, save)(code=code, defaults={
             'title': title, 'area': area, 'http_status': http_status, 'meaning': meaning,
             'resolution': resolution, 'ticket_category': ticket_category,
         })

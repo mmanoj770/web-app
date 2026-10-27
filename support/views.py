@@ -26,6 +26,11 @@ def help_center(request):
     return render(request, 'support/help_center.html', context)
 
 
+def faq(request):
+    """FAQ page, loaded by the page from /api/faqs/."""
+    return render(request, 'support/faq.html')
+
+
 def error_codes(request):
     """Error code reference, loaded by the page from /api/error-codes/."""
     return render(request, 'support/error_codes.html')

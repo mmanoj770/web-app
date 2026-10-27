@@ -15,8 +15,12 @@ from . import lookup, services
 from .models import FAQ, ErrorCode, Ticket
 
 
+# Error code (see /support/error-codes/) for each HTTP status the API returns.
+STATUS_CODES = {400: 'WEB-400', 401: 'WEB-401', 403: 'WEB-403', 404: 'WEB-404'}
+
+
 def _error(message, status):
-    return JsonResponse({'error': message}, status=status)
+    return JsonResponse({'error': message, 'code': STATUS_CODES.get(status, '')}, status=status)
 
 
 def _body(request):

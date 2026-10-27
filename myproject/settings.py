@@ -202,7 +202,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Bumped when CSS/JS change so browsers fetch the new files instead of cached ones.
-ASSET_VERSION = '5.1'
+ASSET_VERSION = '5.2'
 # WhiteNoise serves static files in production straight from the app folders, so no
 # collectstatic step is needed; ASSET_VERSION query strings handle cache busting.
 WHITENOISE_USE_FINDERS = True

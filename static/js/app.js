@@ -608,7 +608,7 @@
       const shown = codes.filter((c) => !q || `${c.code} ${c.title} ${c.meaning} ${c.area_label}`.toLowerCase().includes(q));
       results.innerHTML = shown.length ? shown.map((c) => `
         <article class="card" id="${escapeHtml(c.code)}">
-          <div class="row-between"><span class="code-pill">${escapeHtml(c.code)}</span><span class="xsmall muted">${escapeHtml(c.area_label)}</span></div>
+          <div class="row-between"><span class="code-pill">${escapeHtml(c.code)}</span><span class="xsmall muted">${c.http_status ? `HTTP ${c.http_status} · ` : ''}${escapeHtml(c.area_label)}</span></div>
           <h3>${escapeHtml(c.title)}</h3>
           <p><strong>What happened:</strong> ${escapeHtml(c.meaning)}</p>
           <p><strong>What to do:</strong> ${escapeHtml(c.resolution)}</p>

@@ -43,7 +43,16 @@ class HelpContentTests(TestCase):
         response = self.client.get(reverse('api:error_code', args=['XYZ-999']))
         self.assertEqual(response.status_code, 404)
 
+    def test_required_http_error_codes(self):
+        statuses = set(ErrorCode.objects.values_list('http_status', flat=True))
+        self.assertTrue({400, 401, 403, 404, 429, 500, 503} <= statuses)
+        self.assertTrue(ErrorCode.objects.filter(code__startswith='PAY-').exists())  # Site-specific codes.
+
+    def test_api_errors_carry_codes(self):
+        self.assertEqual(self.client.get(reverse('api:tickets')).json()['code'], 'WEB-401')
+
     def test_pages_load_from_api(self):
+        self.assertContains(self.client.get(reverse('support:faq')), reverse('api:faqs'))
         self.assertContains(self.client.get(reverse('support:home')), reverse('api:faqs'))
         self.assertContains(self.client.get(reverse('support:error_codes')), reverse('api:error_codes'))
 

@@ -49,6 +49,13 @@ class AssistantHelpTests(TestCase):
         self.assertIn('added this to your open ticket', result['reply'])
         self.assertEqual(ticket.messages.count(), 1)
 
+    def test_explains_http_status_codes(self):
+        for message, title in (('what does error 404 mean?', 'Page not found'), ('I got a 503', 'Service unavailable'),
+                               ('401', 'Sign-in required'), ('429 too many requests', 'Too many messages')):
+            self.assertIn(title, fallback.reply(message, self.user)['reply'])
+        # Prices are not error codes.
+        self.assertNotIn('Page not found', fallback.reply('headphones under 500', self.user)['reply'])
+
     def test_unknown_error_code_creates_ticket(self):
         result = fallback.reply('I got error PAY-999 at checkout', self.user)
         self.assertIn("don't have details for error **PAY-999**", result['reply'])

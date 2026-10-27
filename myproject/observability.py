@@ -101,6 +101,7 @@ def health(request):
     status = 'ok' if healthy and mongo_ok is not False else ('degraded' if healthy else 'down')
     return JsonResponse({
         'status': status,
+        **({} if healthy else {'code': 'WEB-503'}),
         'checks': checks,
         'version': (settings.GIT_COMMIT or 'dev')[:7],
         'started_at': STARTED_AT.isoformat(timespec='seconds'),

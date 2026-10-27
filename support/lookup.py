@@ -6,6 +6,13 @@ from .models import FAQ, ErrorCode
 
 WORD_RE = re.compile(r'[a-z0-9]+')
 ERROR_CODE_RE = re.compile(r'\b(PAY|ORD|WEB|AI|TKT)[\s-]?(\d{3})\b', re.IGNORECASE)
+# A bare HTTP status ("error 404", "got a 503", "429 too many requests"), but not "laptop under 500".
+HTTP_STATUS_RE = re.compile(
+    r'(?:\b(?:error|code|status|http|got|getting|seeing|shows?|showing)\b\D{0,12}\b([45]\d\d)\b'
+    r'|\b([45]\d\d)\b\s*(?:error|code|status|page|bad request|unauthori[sz]ed|forbidden|not found'
+    r'|too many|internal|service unavailable)|^\s*([45]\d\d)\s*\??\s*$)',
+    re.IGNORECASE,
+)
 IGNORE = {
     'the', 'and', 'but', 'for', 'you', 'your', 'are', 'was', 'can', 'what', 'how', 'does', 'did', 'have', 'has',
     'with', 'this', 'that', 'its', 'will', 'there', 'any', 'get', 'got', 'please', 'tell', 'about', 'mean',
@@ -70,12 +77,21 @@ def best_faq(message, strict=True):
 
 
 def find_error_code(text):
-    """Return (code_text, ErrorCode or None) for the first error code in `text`, or (None, None)."""
+    """Return (code_text, ErrorCode or None) for the first error code in `text`, or (None, None).
+
+    Understands store codes like PAY-001 and bare HTTP statuses like "error 404" (mapped to WEB-404).
+    """
     match = ERROR_CODE_RE.search(text)
+    if match:
+        code = f'{match.group(1).upper()}-{match.group(2)}'
+        return code, ErrorCode.objects.filter(code=code).first()
+    match = HTTP_STATUS_RE.search(text)
     if not match:
         return None, None
-    code = f'{match.group(1).upper()}-{match.group(2)}'
-    return code, ErrorCode.objects.filter(code=code).first()
+    status = int(next(group for group in match.groups() if group))
+    error = (ErrorCode.objects.filter(http_status=status, code__startswith='WEB-').first()
+             or ErrorCode.objects.filter(http_status=status).order_by('code').first())
+    return (error.code if error else str(status)), error
 
 
 def faq_data(faq):

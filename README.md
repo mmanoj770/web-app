@@ -4,24 +4,25 @@ An AI-powered electronics store built with Django, with an Apple-inspired design
 like Amazon or Flipkart. Customers browse and buy products, chat with an AI shopping assistant and raise
 support tickets. Support agents and administrators work from a dashboard.
 
-**Live site: https://mj-shoppingapp.vercel.app** · Health check: https://mj-shoppingapp.vercel.app/health/
+**Task:** MJ: an AI-powered e-commerce store with an FAQ and error-code support assistant
 
-## Launch checklist
+- **Live site:** https://mj-shoppingapp.vercel.app
+- **Health check:** https://mj-shoppingapp.vercel.app/health/
+- **Repository:** https://github.com/mmanoj770/web-app
 
-| Requirement | Where it is |
+## Assignment requirements
+
+| Requirement | How it is met |
 |---|---|
-| Live HTTPS site, 3+ pages, mobile-friendly | Vercel (link above): home, products, product pages, bag, checkout, orders, help center, error codes, tickets. Responsive down to phone width. |
-| Chat widget on every page | `templates/assistant/widget.html`, included by `templates/base.html` (also on the 403/404/500 pages) |
-| 10+ FAQs in SQL, FAQ page from API | `support.FAQ` table (14 FAQs, editable in Django admin), `GET /api/faqs/`; the help center loads its FAQs from it |
-| 8+ error codes in SQL | `support.ErrorCode` table (13 codes such as `PAY-001`, `ORD-001`, `WEB-500`), `GET /api/error-codes/`, page at `/support/error-codes/`. Codes are shown where they happen (payments, checkout, error pages, chat rate limit). |
-| Custom 404/500 pages + Ask-assistant button | `templates/404.html`, `templates/500.html` (`myproject/views.py`, with a plain fallback if even that fails), `templates/403.html` |
-| Assistant answers FAQs and explains error codes | `assistant/fallback.py` uses `support/lookup.py`; LLMs get the `search_faqs` and `explain_error_code` tools |
-| Ticket created when unsure (CRUD) | `support.services.escalate_from_assistant`: questions the assistant can't answer become a ticket for logged-in customers. Tickets: create, read, update, delete in the site and at `/api/tickets/` |
-| Chats and feedback stored in MongoDB | `myproject/mongo.py`: every chat turn → `chats`, every 👍/👎 and ticket rating → `feedback` (set `MONGODB_URI`) |
-| Keys in env vars, no secrets in GitHub | All keys come from environment variables or the git-ignored `.env`; see `.env.example` |
-| Request logs + health check | `myproject/observability.py`: one JSON log line per request with an `X-Request-ID`; `GET /health/`; recent requests on Dashboard → System |
-| Extra third-party call with timeout and fallback | India Post PIN code API (`orders/delivery.py`): 3-second timeout, 1-day cache, falls back to a local estimate |
-| README with live address and improvements | This file: live address above, improvements at the end |
+| Responsive website, 3+ pages, chat widget on every page | Home, products, product page, bag, checkout, orders, help center, FAQ, error codes, tickets. Works down to phone width. The chat widget (`templates/assistant/widget.html`) is in the base layout, so it is on every page, including the error pages. |
+| 10+ FAQs stored in SQL and shown on the FAQ page | `support.FAQ` table (14 FAQs, editable in Django admin). `/support/faq/` loads them from `GET /api/faqs/`. |
+| 8+ error codes (400, 401, 403, 404, 429, 500, 503 + site-specific) | `support.ErrorCode` table, 16 codes: `WEB-400`, `WEB-401`, `WEB-403`, `WEB-404`, `AI-429`, `WEB-500`, `WEB-503` plus site-specific payment and checkout codes (`PAY-001`..`PAY-005`, `ORD-001`..`ORD-004`). Listed at `/support/error-codes/` and `GET /api/error-codes/`, shown where they happen (payments, checkout, error pages, API errors, chat limit). |
+| Custom 404 and 500 pages with "Ask the assistant" | `templates/404.html`, `templates/500.html` (`myproject/views.py`, with a plain fallback page if even that fails) |
+| Assistant answers from the FAQs, explains error codes, creates a ticket when it can't answer | `assistant/fallback.py` + `support/lookup.py` (FAQ matching; codes like `PAY-001` or "error 404"); LLMs get `search_faqs` and `explain_error_code` tools. Unanswered questions become a ticket via `support.services.escalate_from_assistant`. |
+| Support tickets in SQL; chat logs and feedback in MongoDB | Tickets: `support.Ticket` (Postgres on the live site), with a CRUD API at `/api/tickets/`. Chats and feedback (👍/👎, ticket ratings): MongoDB collections `chats` and `feedback` via `myproject/mongo.py` (`MONGODB_URI`). |
+| API keys in environment variables, nothing confidential in GitHub | All keys come from environment variables (Vercel) or the git-ignored `.env`; see `.env.example`. |
+| Request logging, health check, third-party API with a time limit and fallback | `myproject/observability.py`: one JSON log line per request with an `X-Request-ID`; `GET /health/`. India Post PIN code API (`orders/delivery.py`): 3-second timeout, cached, falls back to a local estimate. |
+| README with the live link and one proposed improvement | Live link above; improvements at the end of this file. |
 
 ## Quick start
 
@@ -254,7 +255,10 @@ empty SQLite file and save it as `deploy/demo.sqlite3`.
 
 ## Improvements
 
-What I would do next, roughly in order:
+**Proposed improvement:** use the 👍/👎 feedback stored in MongoDB to find the questions the assistant
+answers badly or escalates most often, and turn them into new FAQs, so it can answer more questions on its own.
+
+Other next steps, roughly in order:
 
 1. **Permanent data**: connect Postgres (`DATABASE_URL`) and MongoDB Atlas (`MONGODB_URI`) on Vercel; until
    then the live demo resets when Vercel starts a new instance.

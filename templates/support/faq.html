@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}FAQ · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<section class="help-hero">
+  <div class="eyebrow">Help center</div>
+  <h1>Frequently asked questions</h1>
+  <p class="muted" style="font-size: 17px">Quick answers about orders, delivery, payments, returns and support.
+    Can't find yours? Ask our assistant or <a href="{% url 'support:error_codes' %}">look up an error code</a>.</p>
+</section>
+
+<section class="section" id="faq">
+  {% include "support/_faq_list.html" %}
+</section>
+
+<section class="section">
+  <div class="panel center">
+    <h2>Still have a question?</h2>
+    <p class="muted">Our assistant answers from these FAQs and raises a ticket for our team when it isn't sure.</p>
+    <div class="row" style="justify-content:center; flex-wrap: wrap">
+      <button class="btn btn-primary" type="button" data-ask="I have a question"><i class="bi bi-stars"></i> Ask the assistant</button>
+      <a class="btn btn-white" href="{% url 'support:create' %}">Raise a ticket</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

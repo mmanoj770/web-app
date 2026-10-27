@@ -6,6 +6,7 @@ app_name = 'support'
 
 urlpatterns = [
     path('', views.help_center, name='home'),
+    path('faq/', views.faq, name='faq'),
     path('error-codes/', views.error_codes, name='error_codes'),
     path('tickets/', views.ticket_list, name='list'),
     path('new/', views.ticket_create, name='create'),

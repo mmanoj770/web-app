@@ -54,7 +54,7 @@ class ErrorPageTests(TestCase):
         response = views.server_error(request)
         self.assertEqual(response.status_code, 500)
         self.assertContains(response, 'WEB-500', status_code=500)
-        self.assertContains(response, 'Ask assistant', status_code=500)
+        self.assertContains(response, 'Ask the assistant', status_code=500)
 
     def test_500_falls_back_to_plain_page(self):
         with mock.patch('myproject.views.render', side_effect=Exception('template broke')), \
@@ -70,4 +70,4 @@ class ErrorPageTests(TestCase):
                 mock.patch('myproject.observability.logger'):
             response = self.client.get(reverse('catalog:home'))
         self.assertContains(response, 'WEB-500', status_code=500)
-        self.assertContains(response, 'Ask assistant', status_code=500)
+        self.assertContains(response, 'Ask the assistant', status_code=500)
