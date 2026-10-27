@@ -138,7 +138,9 @@ def _database_from_url(url):
         'HOST': parsed.hostname or '',
         'PORT': str(parsed.port or ''),
         'OPTIONS': {'sslmode': options.get('sslmode', 'require')},
-        'CONN_MAX_AGE': 0 if ON_VERCEL else 60,
+        # Reuse connections between requests: opening one to a hosted database costs a second or more.
+        'CONN_MAX_AGE': 60,
+        'CONN_HEALTH_CHECKS': True,
         # Needed behind a transaction-mode pooler such as Neon's (hosts ending in "-pooler").
         'DISABLE_SERVER_SIDE_CURSORS': True,
     }

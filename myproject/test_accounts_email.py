@@ -35,7 +35,7 @@ class SharedDatabaseSetupTests(TestCase):
         env = {'DJANGO_ADMIN_USERNAME': 'owner', 'DJANGO_ADMIN_PASSWORD': 'Owner-pass-123',
                'DJANGO_ADMIN_EMAIL': 'owner@example.com'}
         with mock.patch.dict('os.environ', env), self.assertLogs('myproject.vercel', 'WARNING'):
-            vercel.setup_database()
+            self.assertEqual(vercel.setup_database(), 'done, catalog loaded, admin created')
         self.assertEqual(Product.objects.count(), 29)
         self.assertTrue(Product.objects.filter(images__isnull=False).exists())
         from django.contrib.auth import get_user_model
@@ -47,7 +47,7 @@ class SharedDatabaseSetupTests(TestCase):
         owner.set_password('Changed-pass-456')
         owner.save()
         with mock.patch.dict('os.environ', env):
-            vercel.setup_database()
+            self.assertEqual(vercel.setup_database(), 'done')
         self.assertEqual(Product.objects.count(), 29)
         owner.refresh_from_db()
         self.assertTrue(owner.check_password('Changed-pass-456'))

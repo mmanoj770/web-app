@@ -1,6 +1,7 @@
 """Request logging and the /health/ endpoint."""
 import json
 import logging
+import os
 import time
 import uuid
 from collections import deque
@@ -69,6 +70,25 @@ def health(request):
     except Exception as exc:  # Any database failure means the store can't serve.
         checks['database'] = {'ok': False, 'error': str(exc)[:200]}
 
+    if checks['database']['ok']:
+        try:
+            from django.db.migrations.executor import MigrationExecutor
+
+            executor = MigrationExecutor(connection)
+            checks['database']['pending_migrations'] = len(
+                executor.migration_plan(executor.loader.graph.leaf_nodes()))
+        except Exception as exc:  # Report, don't fail the health check.
+            checks['database']['pending_migrations'] = f'unknown ({exc.__class__.__name__})'
+    if settings.DATABASE_URL:
+        from .vercel import SETUP
+
+        checks['database']['setup'] = SETUP
+    host = settings.DATABASES['default'].get('HOST', '')
+    if host[:1].isalpha():
+        # e.g. "us-east-1" from ep-name-pooler.us-east-1.aws.neon.tech: keep the app near its database.
+        checks['database']['region'] = host.split('.')[1] if host.count('.') >= 2 else ''
+    checks['database']['app_region'] = os.environ.get('VERCEL_REGION', '')
+
     mongo_ok, mongo_detail = mongo.ping()
     checks['mongodb'] = {'ok': mongo_ok, 'detail': mongo_detail}
 
@@ -77,7 +97,7 @@ def health(request):
     config = providers.resolve()
     checks['assistant'] = {'ok': True, 'engine': config.label if config else 'Smart assistant (rule-based)'}
 
-    healthy = checks['database']['ok']
+    healthy = checks['database']['ok'] and checks['database'].get('pending_migrations', 0) == 0
     status = 'ok' if healthy and mongo_ok is not False else ('degraded' if healthy else 'down')
     return JsonResponse({
         'status': status,
