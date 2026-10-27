@@ -1,0 +1,56 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load store_tags %}
+{% block dashboard %}
+<form method="get" class="card card-pad mb-2" data-autosubmit>
+  <div class="row wrap" style="align-items:flex-end">
+    <div>
+      <label class="label" for="t-view">Show</label>
+      <select id="t-view" name="view" class="input input-sm select" style="width:auto">
+        <option value="mine" {% if view == 'mine' %}selected{% endif %}>Assigned to me</option>
+        <option value="unassigned" {% if view == 'unassigned' %}selected{% endif %}>Unassigned</option>
+        <option value="all" {% if view == 'all' %}selected{% endif %}>All tickets</option>
+      </select>
+    </div>
+    <div>
+      <label class="label" for="t-status">Status</label>
+      <select id="t-status" name="status" class="input input-sm select" style="width:auto">
+        <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+        <option value="any" {% if status == 'any' %}selected{% endif %}>Any</option>
+        {% for value, label in statuses %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="grow">
+      <label class="label" for="t-q">Search</label>
+      <input id="t-q" class="input input-sm" name="q" value="{{ query }}" placeholder="Ticket ID, subject, customer" data-no-autosubmit>
+    </div>
+    <button class="btn btn-primary btn-sm" type="submit">Search</button>
+  </div>
+</form>
+
+<div class="card table-wrap">
+  <table class="table">
+    <thead><tr><th>Ticket</th><th>Customer</th><th>Category</th><th>Priority</th><th>Status</th><th>First reply</th><th>Assigned</th></tr></thead>
+    <tbody>
+      {% for t in page %}
+        <tr>
+          <td><a href="{% url 'dashboard:ticket_detail' t.code %}" style="font-weight:600">{{ t.code }}</a><div class="small muted">{{ t.subject|truncatechars:48 }}</div></td>
+          <td>{{ t.customer }}<div class="xsmall muted">{{ t.order.number|default:"" }}</div></td>
+          <td class="small">{{ t.get_category_display }}</td>
+          <td><span class="pill tone-{{ t.priority|tone }}">{{ t.get_priority_display }}</span></td>
+          <td><span class="pill tone-{{ t.status|tone }}">{{ t.get_status_display }}</span></td>
+          <td class="small">
+            {% if t.first_response_at %}<span class="muted">Replied</span>
+            {% elif t.is_overdue %}<span class="sla late">Overdue {{ t.response_due|timesince }}</span>
+            {% elif t.is_active %}<span class="sla">Due in {{ t.response_due|timeuntil }}</span>
+            {% else %}–{% endif %}
+          </td>
+          <td class="small">{{ t.assigned_to|default:"—" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="muted">No tickets match these filters.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load store_tags %}
+{% block dashboard %}
+<div class="row-between mb-2">
+  <form method="get" class="row wrap">
+    <input class="input input-sm" name="q" value="{{ query }}" placeholder="Search products" aria-label="Search products" style="width:220px">
+    <label class="check-row small"><input class="check-input" type="checkbox" name="low_stock" value="1" {% if request.GET.low_stock %}checked{% endif %}> Low stock only</label>
+    <button class="btn btn-primary btn-sm" type="submit">Filter</button>
+  </form>
+  <div class="row">
+    <a class="btn btn-success btn-sm" href="{% url 'admin:catalog_product_add' %}" data-no-prefetch><i class="bi bi-plus-lg"></i> Add product</a>
+    <a class="btn btn-white btn-sm" href="{% url 'admin:catalog_category_changelist' %}" data-no-prefetch>Categories</a>
+  </div>
+</div>
+<div class="card table-wrap">
+  <table class="table">
+    <thead><tr><th>Product</th><th>Price ({{ CURRENCY }})</th><th>MRP</th><th>Stock</th><th>Active</th><th>Featured</th><th></th></tr></thead>
+    <tbody>
+      {% for p in page %}
+        <tr>
+          <td>
+            <div class="row">
+              {% with image=p.primary_image %}{% if image %}<img class="thumb-sm" src="{{ image.thumb_url }}" alt="">{% endif %}{% endwith %}
+              <div><a href="{% url 'admin:catalog_product_change' p.pk %}" data-no-prefetch style="font-weight:500">{{ p.name }}</a>
+                <div class="xsmall muted">{{ p.category.name }} · {% if p.rating_count %}{{ p.rating_avg }}★ ({{ p.rating_count }}){% else %}No reviews{% endif %}</div></div>
+            </div>
+          </td>
+          <td colspan="6">
+            <form method="post" action="{% url 'dashboard:product_edit' p.pk %}" class="row">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <input class="input input-sm" style="width:120px" type="number" step="0.01" min="0" name="price" value="{{ p.price|stringformat:'s' }}" aria-label="Price">
+              <input class="input input-sm" style="width:120px" type="number" step="0.01" min="0" name="mrp" value="{{ p.mrp|default_if_none:''|stringformat:'s' }}" aria-label="MRP">
+              <input class="input input-sm" style="width:80px; {% if p.stock <= 5 %}border-color: var(--orange){% endif %}" type="number" min="0" name="stock" value="{{ p.stock }}" aria-label="Stock">
+              <input class="check-input" type="checkbox" name="is_active" {% if p.is_active %}checked{% endif %} aria-label="Active">
+              <input class="check-input" type="checkbox" name="is_featured" {% if p.is_featured %}checked{% endif %} aria-label="Featured">
+              <button class="btn btn-white btn-sm" type="submit" style="margin-left:auto">Save</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

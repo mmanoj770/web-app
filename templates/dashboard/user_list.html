@@ -1,0 +1,47 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block dashboard %}
+<form method="get" class="card card-pad mb-2" data-autosubmit>
+  <div class="row wrap" style="align-items:flex-end">
+    <div>
+      <label class="label" for="u-role">Role</label>
+      <select id="u-role" name="role" class="input input-sm select" style="width:auto">
+        <option value="">Any</option>
+        {% for value, label in roles %}<option value="{{ value }}" {% if role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="grow"><label class="label" for="u-q">Search</label>
+      <input id="u-q" class="input input-sm" name="q" value="{{ query }}" placeholder="Name, username or email" data-no-autosubmit></div>
+    <button class="btn btn-primary btn-sm" type="submit">Search</button>
+  </div>
+</form>
+<div class="card table-wrap">
+  <table class="table">
+    <thead><tr><th>User</th><th>Email</th><th>Joined</th><th>Role and status</th></tr></thead>
+    <tbody>
+      {% for u in page %}
+        <tr>
+          <td><strong>{{ u.get_full_name|default:u.username }}</strong><div class="xsmall muted">@{{ u.username }}</div></td>
+          <td class="small">{{ u.email }}</td>
+          <td class="small">{{ u.date_joined|date:"d M Y" }}</td>
+          <td>
+            {% if u == user %}
+              <span class="small muted">{{ u.get_role_display }} (you)</span>
+            {% else %}
+              <form method="post" action="{% url 'dashboard:user_edit' u.pk %}" class="row">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <select name="role" class="input input-sm select" style="width:170px" aria-label="Role">
+                  {% for value, label in roles %}<option value="{{ value }}" {% if u.role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+                <label class="check-row small"><input class="check-input" type="checkbox" name="is_active" {% if u.is_active %}checked{% endif %}> Active</label>
+                <button class="btn btn-white btn-sm" type="submit">Save</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

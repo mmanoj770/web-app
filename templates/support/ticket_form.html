@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}Raise a ticket · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="container-narrow" style="margin: 0 auto">
+  <a class="small" href="{% url 'support:home' %}"><i class="bi bi-chevron-left"></i> Help center</a>
+  <h1 class="mt-1">Raise a support ticket</h1>
+  <p class="muted">Three quick steps. You'll get a ticket ID and can follow the conversation until it's resolved.</p>
+
+  <form method="post" enctype="multipart/form-data" class="panel mt-2" data-wizard
+        data-order-categories="{{ order_categories|to_json }}" data-tips="{{ tips|to_json }}"
+        data-has-orders="{% if form.fields.order.queryset %}1{% else %}0{% endif %}" novalidate>
+    {% csrf_token %}
+    <div class="wizard-progress"><span></span></div>
+    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+    <section class="wizard-step" data-step="category">
+      <h2>What do you need help with?</h2>
+      <div class="tiles mt-2">
+        {% for radio in form.category %}
+          <label class="tile">
+            {{ radio.tag }}
+            <span class="tile-body">
+              <i class="bi bi-{% cycle 'truck' 'credit-card' 'box-seam' 'arrow-counterclockwise' 'question-circle' 'chat-dots' %}"></i>
+              <strong>{{ radio.choice_label }}</strong>
+            </span>
+          </label>
+        {% endfor %}
+      </div>
+      {% for error in form.category.errors %}<div class="error">{{ error }}</div>{% endfor %}
+      <div class="row mt-3" style="justify-content:flex-end"><button class="btn btn-primary" type="button" data-next>Continue <i class="bi bi-arrow-right"></i></button></div>
+    </section>
+
+    <section class="wizard-step" data-step="order">
+      <h2>Which order is this about?</h2>
+      <p class="muted small" data-order-hint hidden>Choosing the order helps us resolve this much faster.</p>
+      <div class="stack mt-2">
+        {% for radio in form.order %}
+          {% with order=radio.data.value.instance %}
+          <label class="tile order-tile">
+            {{ radio.tag }}
+            <span class="tile-body">
+              {% with image=order.items.all.0.product.primary_image %}{% if image %}<img src="{{ image.thumb_url }}" alt="">{% endif %}{% endwith %}
+              <span class="grow">
+                <strong>{{ order.number }}</strong> <span class="pill tone-{{ order.status|tone }}">{{ order.get_status_display }}</span><br>
+                <span>{{ order.items.all.0.product_name }}{% if order.items.all|length > 1 %} + {{ order.items.all|length|add:"-1" }} more{% endif %} · {{ order.created_at|date:"d M Y" }} · {{ order.total|money }}</span>
+              </span>
+            </span>
+          </label>
+          {% endwith %}
+        {% endfor %}
+        <label class="tile order-tile">
+          <input type="radio" name="order" value="">
+          <span class="tile-body"><i class="bi bi-dash-circle"></i><span><strong>It's not about an order</strong></span></span>
+        </label>
+      </div>
+      {% for error in form.order.errors %}<div class="error">{{ error }}</div>{% endfor %}
+      <div class="row-between mt-3">
+        <button class="btn btn-white" type="button" data-back><i class="bi bi-arrow-left"></i> Back</button>
+        <button class="btn btn-primary" type="button" data-next>Continue <i class="bi bi-arrow-right"></i></button>
+      </div>
+    </section>
+
+    <section class="wizard-step" data-step="details">
+      <h2>Tell us what happened</h2>
+      <div class="tip" data-tip hidden><i class="bi bi-lightbulb"></i><span></span></div>
+      <div class="field mt-2">
+        <label for="{{ form.subject.id_for_label }}">Subject (optional)</label>
+        {{ form.subject|bs }}
+        {% for error in form.subject.errors %}<div class="error">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="field">
+        <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+        {{ form.description|bs }}
+        {% for error in form.description.errors %}<div class="error">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="field">
+        <span class="label">{{ form.attachments.label }}</span>
+        <label class="dropzone">
+          <i class="bi bi-camera" style="font-size: 26px"></i>
+          <div><strong>Add photos</strong> or drag them here</div>
+          <div class="xsmall">{{ form.attachments.help_text }}</div>
+          <input type="file" name="attachments" accept="image/*" multiple data-preview="#ticket-previews">
+        </label>
+        <div class="previews" id="ticket-previews"></div>
+        {% for error in form.attachments.errors %}<div class="error">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="row-between mt-2">
+        <button class="btn btn-white" type="button" data-back><i class="bi bi-arrow-left"></i> Back</button>
+        <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-send"></i> Submit ticket</button>
+      </div>
+    </section>
+  </form>
+  <p class="small muted center mt-2">Prefer a quick answer? <a href="#" data-ask="I have a problem with my order">Ask the AI assistant</a> first.</p>
+</div>
+{% endblock %}

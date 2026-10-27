@@ -1,0 +1,29 @@
+<button id="ai-launcher" class="ai-launcher" type="button" aria-controls="ai-panel" aria-expanded="false" data-no-prefetch>
+  <i class="bi bi-stars"></i> Ask AI
+</button>
+<section id="ai-panel" class="ai-panel" aria-label="AI shopping assistant" aria-hidden="true"
+         data-chat-url="{% url 'assistant:chat' %}" data-history-url="{% url 'assistant:history' %}"
+         data-clear-url="{% url 'assistant:clear' %}" data-ticket-url="{% url 'support:create' %}">
+  <div class="ai-head">
+    <div class="ai-avatar"><i class="bi bi-stars"></i></div>
+    <div class="grow">
+      <div class="ai-title">Shopping assistant</div>
+      <div class="ai-sub"><span class="dot"></span><span id="ai-engine">Online</span></div>
+    </div>
+    <button id="ai-clear" class="btn btn-icon btn-sm" type="button" title="New conversation" aria-label="New conversation"><i class="bi bi-arrow-counterclockwise"></i></button>
+    <button id="ai-close" class="btn btn-icon btn-sm" type="button" aria-label="Close assistant"><i class="bi bi-x-lg"></i></button>
+  </div>
+  <div id="ai-log" class="ai-log" aria-live="polite"></div>
+  <div class="ai-chips" id="ai-chips">
+    <button type="button">Best phone under ₹40,000</button>
+    <button type="button">Laptop for college</button>
+    <button type="button">Where is my order?</button>
+    <button type="button">Noise cancelling headphones</button>
+    <button type="button">Return policy</button>
+    <button type="button" data-human>Talk to a human</button>
+  </div>
+  <form id="ai-form" class="ai-form">
+    <textarea id="ai-input" rows="1" maxlength="1000" placeholder="Ask about products, orders, returns…" aria-label="Message"></textarea>
+    <button type="submit" aria-label="Send" disabled><i class="bi bi-arrow-up"></i></button>
+  </form>
+</section>

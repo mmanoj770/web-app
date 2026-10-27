@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}Payment · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+{% include "includes/checkout_steps.html" %}
+<div class="layout-aside">
+  <form method="post" class="panel" autocomplete="off">
+    {% csrf_token %}
+    <h1 style="font-size: 26px">Choose how to pay</h1>
+    <p class="muted">Order {{ order.number }} · {{ order.total|money }}</p>
+
+    <div class="pay-methods">
+      {% for radio in form.method %}
+        <label class="tile">
+          {{ radio.tag }}
+          <span class="tile-body" style="flex-direction:row;align-items:center;gap:14px">
+            <i class="bi bi-{% if radio.data.value == 'upi' %}phone{% else %}credit-card-2-front{% endif %}"></i>
+            <span><strong>{{ radio.choice_label }}</strong><br>
+              <span>{% if radio.data.value == 'upi' %}Google Pay, PhonePe, Paytm or any UPI app{% else %}Visa, Mastercard, RuPay and more{% endif %}</span></span>
+          </span>
+        </label>
+      {% endfor %}
+    </div>
+
+    <div class="pay-panel" data-method="upi">
+      <div class="field">
+        <label for="{{ form.upi_id.id_for_label }}">{{ form.upi_id.label }}</label>
+        {{ form.upi_id|bs }}
+        {% for error in form.upi_id.errors %}<div class="error">{{ error }}</div>{% endfor %}
+        <div class="help">You'll approve the payment request in your UPI app.</div>
+      </div>
+    </div>
+    <div class="pay-panel" data-method="card">
+      <div class="form-grid">
+        {% for field in form %}{% if field.name != 'method' and field.name != 'upi_id' %}
+          <div class="field {% if field.name == 'card_number' or field.name == 'name_on_card' %}full{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field|bs }}
+            {% for error in field.errors %}<div class="error">{{ error }}</div>{% endfor %}
+          </div>
+        {% endif %}{% endfor %}
+      </div>
+    </div>
+
+    <button class="btn btn-success btn-lg btn-block mt-2" type="submit"><i class="bi bi-lock-fill"></i>
+      <span data-pay-label data-upi-label="Pay {{ order.total|money }} with UPI" data-card-label="Pay {{ order.total|money }}">Pay {{ order.total|money }}</span>
+    </button>
+
+    <div class="test-note">
+      <strong>Demo payment gateway.</strong> No real money moves.
+      UPI: any ID like <code>you@okbank</code> succeeds, <code>fail@upi</code> is declined.
+      Cards: <code>4242 4242 4242 4242</code> succeeds, <code>4000 0000 0000 0002</code> is declined,
+      <code>4000 0000 0000 9995</code> has insufficient funds. Use any future expiry and any CVV.
+    </div>
+    <p class="small muted mt-2 mb-0">Not ready? <a href="{{ order.get_absolute_url }}">Pay later</a>. Your items are reserved until you pay or cancel.</p>
+  </form>
+  <aside class="sticky-aside">
+    <div class="card">
+      <div class="card-head"><h3>Deliver to</h3></div>
+      <div class="card-body small">{{ order.full_name }}<br>{{ order.address_line }}<br>{{ order.city }} {{ order.postal_code }}<br>{{ order.phone }}</div>
+    </div>
+    <div class="card mt-2">
+      <div class="card-head"><h3>Items</h3></div>
+      {% for item in order.items.all %}{% with image=item.product.primary_image %}
+        <div class="list-row">
+          {% if image %}<img class="thumb-sm" src="{{ image.thumb_url }}" alt="">{% endif %}
+          <div class="grow small"><div style="font-weight:500">{{ item.product_name }}</div><div class="muted">Qty {{ item.quantity }}</div></div>
+          <div class="small" style="font-weight:600">{{ item.line_total|money }}</div>
+        </div>
+      {% endwith %}{% endfor %}
+      <div class="list-row" style="justify-content:space-between"><strong>Total</strong><strong>{{ order.total|money }}</strong></div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% load store_tags %}{% if form.non_field_errors %}
+  <div class="form-errors">{{ form.non_field_errors|join:" " }}</div>
+{% endif %}
+{% for field in form.hidden_fields %}{{ field }}{% endfor %}
+{% for field in form.visible_fields %}
+  {% if field.field.widget.input_type == 'checkbox' %}
+    <div class="field">
+      <label class="check-row">{{ field|bs }} <span>{{ field.label }}</span></label>
+      {% for error in field.errors %}<div class="error">{{ error }}</div>{% endfor %}
+    </div>
+  {% else %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field|bs }}
+      {% if field.help_text %}<div class="help">{{ field.help_text|safe }}</div>{% endif %}
+      {% for error in field.errors %}<div class="error">{{ error }}</div>{% endfor %}
+    </div>
+  {% endif %}
+{% endfor %}

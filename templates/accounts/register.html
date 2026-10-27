@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Create account · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="auth" style="max-width: 520px">
+  <div class="panel">
+    <h1>Create your account</h1>
+    <p class="center muted">One account for shopping, order tracking and support.</p>
+    <form method="post" class="mt-3">
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Create account</button>
+    </form>
+    <p class="center small mt-3 mb-0">Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+  </div>
+</div>
+{% endblock %}

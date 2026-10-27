@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}My orders · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="account">
+  {% include "includes/account_nav.html" with active="orders" %}
+  <div>
+    <div class="row-between mb-2">
+      <h1 class="page-title">My orders</h1>
+      <div class="segmented">
+        {% for key, label in tabs %}<a href="?tab={{ key }}" class="{% if tab == key %}active{% endif %}">{{ label }}</a>{% endfor %}
+      </div>
+    </div>
+    {% for order in orders %}
+      <a class="card list-row order-card mb-2" href="{{ order.get_absolute_url }}" style="border-top:0; display:flex; flex-wrap:wrap">
+        <div class="order-items">
+          {% for item in order.items.all|slice:":3" %}{% with image=item.product.primary_image %}
+            {% if image %}<img class="thumb-sm" src="{{ image.thumb_url }}" alt="">{% else %}<span class="thumb-sm"></span>{% endif %}
+          {% endwith %}{% endfor %}
+        </div>
+        <div class="grow">
+          <div style="font-weight:600; color: var(--text)">{% with first=order.items.all.0 %}{{ first.product_name }}{% endwith %}{% if order.items.all|length > 1 %} <span class="muted small">+{{ order.items.all|length|add:"-1" }} more</span>{% endif %}</div>
+          <div class="small muted">{{ order.number }} · {{ order.created_at|date:"d M Y" }}</div>
+        </div>
+        <div style="text-align:right">
+          <span class="pill tone-{{ order.status|tone }}"><span class="dot"></span> {{ order.get_status_display }}</span>
+          <div class="small muted mt-1">
+            {% if order.status == 'delivered' %}Delivered{% elif order.status == 'cancelled' %}Cancelled{% elif order.status == 'pending' %}Payment pending{% else %}Arriving by {{ order.expected_delivery|date:"D, d M" }}{% endif %}
+          </div>
+        </div>
+        <div class="price" style="min-width: 110px; text-align:right; color: var(--text)">{{ order.total|money }}</div>
+      </a>
+    {% empty %}
+      <div class="card empty">
+        <i class="bi bi-box-seam"></i>
+        <h2>No orders here</h2>
+        <p class="muted">When you place an order, you can track every step from this page.</p>
+        <a class="btn btn-primary" href="{% url 'catalog:product_list' %}">Start shopping</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

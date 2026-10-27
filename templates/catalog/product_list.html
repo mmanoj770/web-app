@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}{% if category %}{{ category.name }}{% elif query %}"{{ query }}"{% else %}All products{% endif %} · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="row-between mb-2">
+  <div>
+    <div class="eyebrow">{% if category %}{{ category.tagline }}{% elif query %}Search results{% else %}Catalog{% endif %}</div>
+    <h1 class="page-title">{% if query %}Results for "{{ query }}"{% elif category %}{{ category.name }}{% else %}All products{% endif %}</h1>
+    <div class="muted small">{{ page.paginator.count }} product{{ page.paginator.count|pluralize }}</div>
+  </div>
+</div>
+
+<div class="listing">
+  <aside class="filters" aria-label="Filters">
+    <form method="get" data-autosubmit id="filter-form">
+      {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+      <input type="hidden" name="sort" value="{{ sort }}">
+      {% if category %}<input type="hidden" name="category" value="{{ category.slug }}">{% endif %}
+      <div class="row-between" style="padding-top: 12px">
+        <strong>Filters</strong>
+        <span class="row">
+          {% if active_filters %}<a class="small" href="?{% if query %}q={{ query|urlencode }}&{% endif %}{% if category %}category={{ category.slug }}{% endif %}">Clear all</a>{% endif %}
+          <button class="btn btn-icon btn-sm filters-toggle" type="button" data-close-filters aria-label="Close filters"><i class="bi bi-x-lg"></i></button>
+        </span>
+      </div>
+
+      <div class="filter-group filter-cats">
+        <h3>Category</h3>
+        <a href="?{% if query %}q={{ query|urlencode }}{% endif %}" class="{% if not category %}active{% endif %}"><span>All</span></a>
+        {% for c in categories %}
+          <a href="?category={{ c.slug }}{% if query %}&q={{ query|urlencode }}{% endif %}" class="{% if category and c.pk == category.pk %}active{% endif %}">
+            <span>{{ c.name }}</span><span class="muted xsmall">{{ c.product_count }}</span>
+          </a>
+        {% endfor %}
+      </div>
+
+      <div class="filter-group">
+        <h3>Brand</h3>
+        {% for row in brand_facets %}
+          <label class="filter-option">
+            <input class="check-input" type="checkbox" name="brand" value="{{ row.brand }}" {% if row.brand in selected_brands %}checked{% endif %}>
+            {{ row.brand }} <span class="count">{{ row.n }}</span>
+          </label>
+        {% empty %}
+          <p class="small muted mb-0">No brands match.</p>
+        {% endfor %}
+      </div>
+
+      <div class="filter-group">
+        <h3>Price ({{ CURRENCY }})</h3>
+        <div class="price-inputs">
+          <input class="input input-sm" type="number" min="0" step="500" name="min_price" placeholder="Min" value="{{ min_price|default_if_none:'' }}" aria-label="Minimum price">
+          <span class="muted">–</span>
+          <input class="input input-sm" type="number" min="0" step="500" name="max_price" placeholder="Max" value="{{ max_price|default_if_none:'' }}" aria-label="Maximum price">
+        </div>
+        <div class="chips mt-1">
+          <button class="chip {% if max_price == 10000 %}active{% endif %}" type="button" data-max-price="10000">Under ₹10k</button>
+          <button class="chip {% if max_price == 30000 %}active{% endif %}" type="button" data-max-price="30000">Under ₹30k</button>
+          <button class="chip {% if max_price == 60000 %}active{% endif %}" type="button" data-max-price="60000">Under ₹60k</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <h3>Customer rating</h3>
+        <label class="filter-option"><input class="check-input" type="radio" name="rating" value="4" {% if min_rating == '4' %}checked{% endif %}> 4★ &amp; above</label>
+        <label class="filter-option"><input class="check-input" type="radio" name="rating" value="3" {% if min_rating == '3' %}checked{% endif %}> 3★ &amp; above</label>
+        <label class="filter-option"><input class="check-input" type="radio" name="rating" value="" {% if not min_rating %}checked{% endif %}> Any rating</label>
+      </div>
+
+      <div class="filter-group">
+        <h3>Discount</h3>
+        <label class="filter-option"><input class="check-input" type="radio" name="discount" value="30" {% if min_discount == '30' %}checked{% endif %}> 30% or more</label>
+        <label class="filter-option"><input class="check-input" type="radio" name="discount" value="20" {% if min_discount == '20' %}checked{% endif %}> 20% or more</label>
+        <label class="filter-option"><input class="check-input" type="radio" name="discount" value="10" {% if min_discount == '10' %}checked{% endif %}> 10% or more</label>
+        <label class="filter-option"><input class="check-input" type="radio" name="discount" value="" {% if not min_discount %}checked{% endif %}> Any</label>
+      </div>
+
+      <div class="filter-group">
+        <h3>Availability</h3>
+        <label class="filter-option"><input class="check-input" type="checkbox" name="in_stock" value="1" {% if in_stock %}checked{% endif %}> In stock only</label>
+      </div>
+      <noscript><button class="btn btn-primary btn-block mt-2">Apply filters</button></noscript>
+    </form>
+  </aside>
+
+  <div>
+    <div class="toolbar">
+      <div class="row wrap">
+        <button class="btn btn-white btn-sm filters-toggle" type="button" data-open-filters><i class="bi bi-sliders"></i> Filters{% if active_filters %} ({{ active_filters }}){% endif %}</button>
+        {% for brand in selected_brands %}<span class="chip active">{{ brand }}</span>{% endfor %}
+      </div>
+      <form method="get" class="row" data-autosubmit>
+        {% for key, values in request.GET.lists %}{% if key != 'sort' and key != 'page' %}{% for v in values %}<input type="hidden" name="{{ key }}" value="{{ v }}">{% endfor %}{% endif %}{% endfor %}
+        <label class="small muted" for="sort">Sort by</label>
+        <select id="sort" name="sort" class="input input-sm select" style="width: auto">
+          {% for key, label in sort_options %}<option value="{{ key }}" {% if sort == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </form>
+    </div>
+
+    {% if page.object_list %}
+      <div class="grid grid-products">
+        {% for product in page %}{% include "includes/product_card.html" %}{% endfor %}
+      </div>
+      {% include "includes/pagination.html" %}
+    {% else %}
+      <div class="card empty">
+        <i class="bi bi-search"></i>
+        <h2>No products match</h2>
+        <p class="muted">Try removing a filter, or ask our AI assistant to find something similar.</p>
+        <div class="row" style="justify-content:center">
+          <a class="btn btn-white" href="{% url 'catalog:product_list' %}">Clear search</a>
+          <button class="btn btn-primary" type="button" data-ask="I'm looking for {{ query|default:'a gadget' }}. What do you recommend?"><i class="bi bi-stars"></i> Ask AI</button>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

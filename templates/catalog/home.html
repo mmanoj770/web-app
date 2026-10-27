@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block content %}
+
+{% if hero_products %}
+<section class="hero" aria-roledescription="carousel" aria-label="Featured products">
+  {% for product in hero_products %}{% with image=product.primary_image %}
+    <div class="hero-slide {% if forloop.first %}active{% endif %}" aria-roledescription="slide" aria-label="{{ forloop.counter }} of {{ hero_products|length }}">
+      <div class="hero-bg {% cycle '' 'alt-1' 'alt-2' %}" style="z-index:-2"></div>
+      <div>
+        <div class="eyebrow">{{ product.category.name }} · {% if product.discount_percent %}Save {{ product.discount_percent }}%{% else %}New{% endif %}</div>
+        <h1>{{ product.name }}</h1>
+        <p class="lead">{{ product.description }}</p>
+        <div class="hero-price">From <strong>{{ product.price|money }}</strong>{% if product.discount_percent %} <span style="opacity:.6;text-decoration:line-through">{{ product.list_price|money }}</span>{% endif %}</div>
+        <div class="row wrap">
+          <form method="post" action="{% url 'cart:add' product.pk %}" data-cart-form>
+            {% csrf_token %}<button class="btn btn-primary btn-lg" type="submit">Buy</button>
+          </form>
+          <a class="btn btn-white btn-lg" href="{{ product.get_absolute_url }}">Learn more</a>
+        </div>
+      </div>
+      {% if image %}<div class="hero-media"><img src="{{ image.image.url }}" alt="{{ product.name }}" {% if not forloop.first %}loading="lazy"{% endif %}></div>{% endif %}
+    </div>
+  {% endwith %}{% endfor %}
+  <div class="hero-dots">
+    {% for product in hero_products %}<button type="button" class="{% if forloop.first %}active{% endif %}" aria-label="Show {{ product.name }}"></button>{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<div class="trust">
+  <div class="trust-item"><i class="bi bi-truck"></i><div><strong>Free delivery</strong><span>On every order, across India</span></div></div>
+  <div class="trust-item"><i class="bi bi-arrow-repeat"></i><div><strong>7-day returns</strong><span>Damaged or wrong items</span></div></div>
+  <div class="trust-item"><i class="bi bi-shield-check"></i><div><strong>Secure payments</strong><span>UPI and all major cards</span></div></div>
+  <div class="trust-item"><i class="bi bi-stars"></i><div><strong>AI help, 24×7</strong><span>Answers in seconds</span></div></div>
+</div>
+
+<section class="section reveal">
+  <div class="section-head"><h2>Shop by category</h2><a class="link-more" href="{% url 'catalog:product_list' %}">All products</a></div>
+  <div class="cat-grid">
+    {% for c in categories %}{% with cover=c.cover_image %}
+      <a class="cat-tile" href="{{ c.get_absolute_url }}">
+        {% if cover %}<img src="{{ cover.thumb_url }}" alt="" loading="lazy">{% endif %}
+        <div class="cat-label"><strong>{{ c.name }}</strong><span>{{ c.product_count }} products</span></div>
+      </a>
+    {% endwith %}{% endfor %}
+  </div>
+</section>
+
+{% url 'catalog:product_list' as list_url %}
+{% with more=list_url|add:"?sort=discount" %}
+  {% include "includes/rail.html" with products=deals title="Today's top deals" eyebrow="Limited time" more_url=more %}
+{% endwith %}
+
+<section class="section reveal">
+  <div class="promo-grid">
+    <div class="promo ai">
+      <div class="eyebrow" style="color: rgba(255,255,255,.8)">New · AI shopping assistant</div>
+      <h3>Not sure what to buy? Just ask.</h3>
+      <p style="color: rgba(255,255,255,.85); max-width: 40ch">Tell it your budget and what you need. It compares specs, finds deals and tracks your orders.</p>
+      <div class="row wrap">
+        <button class="btn btn-white" type="button" data-ask="Suggest a laptop for college under 60000">Try "laptop for college"</button>
+        <button class="btn" style="background: rgba(255,255,255,.18); color: #fff" type="button" data-ask="Which noise cancelling earbuds are best?">Compare earbuds</button>
+      </div>
+    </div>
+    {% with tile=categories.3 %}{% with cover=tile.cover_image %}
+    <a class="promo" href="{% url 'support:home' %}" style="text-decoration:none">
+      {% if cover %}<img src="{{ cover.image.url }}" alt="" loading="lazy">{% endif %}
+      <div class="eyebrow" style="color: rgba(255,255,255,.8)">Help center</div>
+      <h3>Something not right? We've got you.</h3>
+      <p style="color: rgba(255,255,255,.85)">Track orders, request refunds or raise a ticket. Real people, fast answers.</p>
+      <span class="btn btn-white" style="align-self: flex-start">Get help</span>
+    </a>
+    {% endwith %}{% endwith %}
+  </div>
+</section>
+
+{% with more=list_url|add:"?sort=rating" %}
+  {% include "includes/rail.html" with products=top_rated title="Top rated by customers" eyebrow="Loved by shoppers" more_url=more %}
+{% endwith %}
+{% with more=list_url|add:"?sort=newest" %}
+  {% include "includes/rail.html" with products=new_arrivals title="New arrivals" eyebrow="Just landed" more_url=more %}
+{% endwith %}
+{% include "includes/rail.html" with products=recently_viewed title="Recently viewed" eyebrow="Pick up where you left off" more_url="" %}
+
+<section class="section reveal">
+  <div class="section-head"><h2>Popular brands</h2></div>
+  <div class="brand-strip">
+    {% for brand in brands %}<a class="brand-chip" href="{{ list_url }}?brand={{ brand|urlencode }}">{{ brand }}</a>{% endfor %}
+  </div>
+</section>
+{% endblock %}

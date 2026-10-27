@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}Checkout · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+{% include "includes/checkout_steps.html" %}
+<div class="layout-aside">
+  <form method="post" class="panel">
+    {% csrf_token %}
+    <h1 style="font-size: 26px">Where should we deliver?</h1>
+    <p class="muted">Free delivery in 3-5 days in metro cities, 5-8 days elsewhere.</p>
+    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    <div class="form-grid">
+      {% for field in form.visible_fields %}
+        <div class="field {% if field.name == 'address_line' %}full{% endif %}">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field|bs }}
+          {% for error in field.errors %}<div class="error">{{ error }}</div>{% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+    <label class="check-row mb-2"><input class="check-input" type="checkbox" name="save_address" value="1" checked> <span class="small">Save this address to my profile</span></label>
+    <button class="btn btn-primary btn-lg" type="submit">Continue to payment <i class="bi bi-arrow-right"></i></button>
+  </form>
+  <aside class="sticky-aside">
+    <div class="card">
+      <div class="card-head"><h3>Order summary</h3><a class="small" href="{% url 'cart:detail' %}">Edit</a></div>
+      {% for line in lines %}{% with image=line.product.primary_image %}
+        <div class="list-row">
+          {% if image %}<img class="thumb-sm" src="{{ image.thumb_url }}" alt="">{% endif %}
+          <div class="grow small"><div style="font-weight:500">{{ line.product.name }}</div><div class="muted">Qty {{ line.quantity }}</div></div>
+          <div class="small" style="font-weight:600">{{ line.line_total|money }}</div>
+        </div>
+      {% endwith %}{% endfor %}
+    </div>
+    <div class="mt-2">{% include "includes/price_summary.html" %}</div>
+  </aside>
+</div>
+{% endblock %}

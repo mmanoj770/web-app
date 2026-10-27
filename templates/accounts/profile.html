@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Profile · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="account">
+  {% include "includes/account_nav.html" with active="profile" %}
+  <div>
+    <h1 class="page-title">Profile &amp; address</h1>
+    <p class="muted">Your saved address is filled in automatically at checkout.</p>
+    <form method="post" class="panel" style="max-width: 640px">
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <button class="btn btn-primary" type="submit">Save changes</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Wishlist · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="account">
+  {% include "includes/account_nav.html" with active="wishlist" %}
+  <div>
+    <h1 class="page-title">Wishlist</h1>
+    <p class="muted">{{ items|length }} saved item{{ items|length|pluralize }}</p>
+    {% if items %}
+      <div class="grid grid-products">
+        {% for item in items %}
+          {% include "includes/product_card.html" with product=item.product %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card empty">
+        <i class="bi bi-heart"></i>
+        <h2>Nothing saved yet</h2>
+        <p class="muted">Tap the heart on any product to save it for later.</p>
+        <a class="btn btn-primary" href="{% url 'catalog:product_list' %}">Explore products</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

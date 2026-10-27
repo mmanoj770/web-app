@@ -1,0 +1,48 @@
+{% load store_tags %}{% with image=product.primary_image %}
+<article class="pcard">
+  <div class="pcard-media">
+    {% if product.discount_percent >= 10 %}<span class="badge-off">-{{ product.discount_percent }}%</span>{% endif %}
+    <button class="wish-btn {% if product.pk in wishlist_ids %}saved{% endif %}" type="button"
+            data-wishlist-url="{% url 'catalog:wishlist_toggle' product.pk %}"
+            aria-pressed="{% if product.pk in wishlist_ids %}true{% else %}false{% endif %}" aria-label="Save {{ product.name }} to wishlist">
+      <i class="bi bi-heart"></i>
+    </button>
+    {% if image %}
+      <img src="{{ image.thumb_url }}" alt="{{ product.name }}" loading="lazy" decoding="async">
+    {% else %}
+      <div class="placeholder"><i class="bi bi-box-seam"></i></div>
+    {% endif %}
+  </div>
+  <div class="pcard-body">
+    <div class="pcard-brand">{{ product.brand }}</div>
+    <h3 class="pcard-name"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
+    {% if product.rating_count %}
+      <div class="pcard-rating">
+        <span class="rating-pill">{{ product.rating_avg }} <i class="bi bi-star-fill"></i></span>
+        <span>({{ product.rating_count }})</span>
+      </div>
+    {% endif %}
+    <div class="pcard-price">
+      <span class="price">{{ product.price|money }}</span>
+      {% if product.discount_percent %}<span class="mrp">{{ product.list_price|money }}</span><span class="off">{{ product.discount_percent }}% off</span>{% endif %}
+    </div>
+    {% if not product.in_stock %}
+      <div class="stock-note" style="color: var(--red)">Out of stock</div>
+    {% elif product.stock <= 5 %}
+      <div class="stock-note" style="color: var(--orange)">Only {{ product.stock }} left</div>
+    {% endif %}
+    {% if not hide_cart %}
+    <div class="pcard-foot">
+      {% if product.in_stock %}
+        <form method="post" action="{% url 'cart:add' product.pk %}" data-cart-form>
+          {% csrf_token %}
+          <button class="btn btn-cta btn-sm btn-block" type="submit"><i class="bi bi-bag-plus"></i> Add to bag</button>
+        </form>
+      {% else %}
+        <button class="btn btn-sm btn-block" type="button" disabled>Notify me</button>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</article>
+{% endwith %}

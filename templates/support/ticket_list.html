@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}Support tickets · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="account">
+  {% include "includes/account_nav.html" with active="tickets" %}
+  <div>
+    <div class="row-between mb-2">
+      <h1 class="page-title">Support tickets</h1>
+      <div class="row wrap">
+        <div class="segmented">
+          <a href="?tab=active" class="{% if tab == 'active' %}active{% endif %}">Open</a>
+          <a href="?tab=closed" class="{% if tab != 'active' %}active{% endif %}">Resolved</a>
+        </div>
+        <a class="btn btn-primary btn-sm" href="{% url 'support:create' %}"><i class="bi bi-plus-lg"></i> New ticket</a>
+      </div>
+    </div>
+    {% if tickets %}
+      <div class="card">
+        {% for t in tickets %}
+          <a class="list-row" href="{{ t.get_absolute_url }}">
+            <span class="quick-card" style="padding:0; box-shadow:none; background:none"><span class="icon"><i class="bi bi-ticket-perforated"></i></span></span>
+            <div class="grow">
+              <div style="color:var(--text); font-weight:600">{{ t.subject }}</div>
+              <div class="small muted">{{ t.code }} · {{ t.get_category_display }}{% if t.order %} · {{ t.order.number }}{% endif %} · updated {{ t.updated_at|timesince }} ago</div>
+            </div>
+            <span class="pill tone-{{ t.status|tone }}"><span class="dot"></span> {{ t.get_status_display }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card empty">
+        <i class="bi bi-emoji-smile"></i>
+        <h2>{% if tab == 'active' %}No open tickets{% else %}No resolved tickets yet{% endif %}</h2>
+        <p class="muted">If something goes wrong with an order, we're here to help.</p>
+        <div class="row" style="justify-content:center">
+          <a class="btn btn-primary" href="{% url 'support:create' %}">Raise a ticket</a>
+          <button class="btn btn-white" type="button" data-ask="I need help with an order"><i class="bi bi-stars"></i> Ask AI first</button>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

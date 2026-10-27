@@ -1,0 +1,65 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load store_tags %}
+{% block dashboard %}
+<div class="row-between mb-2">
+  <div>
+    <a class="small" href="{% url 'dashboard:orders' %}"><i class="bi bi-chevron-left"></i> Orders</a>
+    <h1 class="page-title mt-1">Order {{ order.number }}</h1>
+    <div class="small muted">{{ order.user }} · {{ order.user.email }} · placed {{ order.created_at|date:"d M Y, H:i" }}</div>
+  </div>
+  <span class="pill tone-{{ order.status|tone }}" style="font-size:14px">{{ order.get_status_display }}</span>
+</div>
+<div class="two-col wide-left">
+  <div class="stack" style="margin-top:0">
+    <div class="card">
+      <div class="card-head"><h3>Items</h3></div>
+      {% for item in order.items.all %}
+        <div class="list-row small"><span class="grow">{{ item.quantity }} × {{ item.product_name }} @ {{ item.unit_price|money }}</span><strong>{{ item.line_total|money }}</strong></div>
+      {% endfor %}
+      <div class="list-row" style="justify-content:space-between"><strong>Total</strong><strong>{{ order.total|money }}</strong></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Payments</h3></div>
+      {% for p in order.payments.all %}
+        <div class="list-row small">
+          <span class="grow">{{ p.created_at|date:"d M Y H:i" }} · {{ p.amount|money }} · {{ p.get_method_display }} {{ p.card_last4 }}{{ p.upi_id }} {{ p.reference }} {{ p.failure_reason }}</span>
+          <span class="pill tone-{{ p.status|tone }}">{{ p.get_status_display }}</span>
+        </div>
+      {% empty %}
+        <div class="list-row small muted">No payment attempts yet.</div>
+      {% endfor %}
+    </div>
+    {% if order.tickets.all %}
+      <div class="card">
+        <div class="card-head"><h3>Related tickets</h3></div>
+        {% for t in order.tickets.all %}
+          <a class="list-row small" href="{% url 'dashboard:ticket_detail' t.code %}"><span class="grow">{{ t.code }} · {{ t.subject }}</span><span class="pill tone-{{ t.status|tone }}">{{ t.get_status_display }}</span></a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+  <div class="stack" style="margin-top:0">
+    {% if form %}
+      <form method="post" class="card card-pad">
+        {% csrf_token %}
+        <h3>Update status</h3>
+        {% include "includes/form_fields.html" %}
+        <button class="btn btn-primary btn-block" type="submit">Update order</button>
+      </form>
+    {% endif %}
+    <div class="card card-pad small">
+      <h3>Ship to</h3>
+      {{ order.full_name }}<br>{{ order.address_line }}<br>{{ order.city }} {{ order.postal_code }}<br>{{ order.phone }}
+      {% if order.tracking_number %}<div class="mt-1"><strong>{{ order.carrier }}</strong> {{ order.tracking_number }}</div>{% endif %}
+    </div>
+    <div class="card card-pad">
+      <h3>Timeline</h3>
+      <ul class="timeline mt-2">
+        {% for e in order.events.all %}
+          <li><div style="font-weight:600">{{ e.get_status_display }}</div><div class="xsmall muted">{{ e.created_at|date:"d M Y, H:i" }}</div>{% if e.note %}<div class="small">{{ e.note }}</div>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

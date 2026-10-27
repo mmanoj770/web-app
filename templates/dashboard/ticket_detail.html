@@ -1,0 +1,106 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load store_tags %}
+{% block dashboard %}
+<div class="row-between mb-2">
+  <div>
+    <a class="small" href="{% url 'dashboard:tickets' %}"><i class="bi bi-chevron-left"></i> Tickets</a>
+    <div class="eyebrow mt-1">{{ ticket.code }} · {{ ticket.get_category_display }} · via {{ ticket.get_source_display }}</div>
+    <h1 class="page-title">{{ ticket.subject }}</h1>
+    <div class="row wrap small">
+      <span class="pill tone-{{ ticket.status|tone }}">{{ ticket.get_status_display }}</span>
+      <span class="pill tone-{{ ticket.priority|tone }}">{{ ticket.get_priority_display }} priority</span>
+      {% if ticket.first_response_at %}<span class="muted">First reply {{ ticket.first_response_at|timesince:ticket.created_at }} after opening</span>
+      {% elif ticket.is_overdue %}<span class="sla late">First reply overdue by {{ ticket.response_due|timesince }}</span>
+      {% elif ticket.is_active %}<span class="sla">First reply due in {{ ticket.response_due|timeuntil }}</span>{% endif %}
+      {% if ticket.csat_rating %}<span>Customer rating {% include "includes/stars.html" with rating=ticket.csat_rating %}</span>{% endif %}
+    </div>
+  </div>
+  {% if not ticket.assigned_to %}
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="take">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-hand-index"></i> Assign to me</button></form>
+  {% endif %}
+</div>
+
+{% if not can_edit %}
+  <div class="tip mb-2"><i class="bi bi-info-circle"></i><span>This ticket is assigned to {{ ticket.assigned_to }}. You can view it but not reply.</span></div>
+{% endif %}
+
+<div class="two-col wide-left">
+  <div class="card card-pad">
+    <div class="thread">
+      <div class="bubble theirs">
+        <div class="meta">{{ ticket.customer }} · {{ ticket.created_at|date:"d M Y, H:i" }}</div>
+        {{ ticket.description|linebreaksbr }}
+        {% if opening_photos %}<div class="bubble-photos">{% for a in opening_photos %}<img src="{{ a.file.url }}" alt="Customer photo" data-lightbox>{% endfor %}</div>{% endif %}
+      </div>
+      {% for m in thread %}
+        {% if m.is_system %}
+          <div class="system-note">{{ m.body }} · {{ m.author|default:"" }} · {{ m.created_at|date:"d M, H:i" }}</div>
+        {% else %}
+          <div class="bubble {% if m.is_internal %}internal{% elif m.author_id == ticket.customer_id %}theirs{% else %}mine{% endif %}">
+            <div class="meta">{{ m.author|default:"Deleted user" }}{% if m.is_internal %} · <strong>Internal note</strong>{% endif %} · {{ m.created_at|date:"d M Y, H:i" }}</div>
+            {{ m.body|linebreaksbr }}
+            {% if m.attachments.all %}<div class="bubble-photos">{% for a in m.attachments.all %}<img src="{{ a.file.url }}" alt="Attached photo" data-lightbox>{% endfor %}</div>{% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if can_edit %}
+      <form method="post" enctype="multipart/form-data" class="mt-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="reply">
+        <div class="row-between mb-1">
+          <label class="label mb-0" for="{{ reply_form.body.id_for_label }}">Reply to customer</label>
+          <select class="input input-sm select" style="width:auto" data-canned="#{{ reply_form.body.id_for_label }}" aria-label="Insert a canned reply">
+            <option value="">Canned replies…</option>
+            {% for label, text in canned_replies %}<option value="{{ text }}">{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        {{ reply_form.body|bs }}
+        {% for error in reply_form.body.errors %}<div class="error">{{ error }}</div>{% endfor %}
+        <div class="row-between mt-1">
+          <div class="row wrap">
+            <label class="check-row small">{{ reply_form.is_internal|bs }} Internal note</label>
+            <label class="btn btn-ghost btn-sm" style="cursor:pointer"><i class="bi bi-paperclip"></i> Photos
+              <input type="file" name="attachments" accept="image/*" multiple hidden data-preview="#agent-previews"></label>
+          </div>
+          <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Send</button>
+        </div>
+        <div class="previews" id="agent-previews"></div>
+      </form>
+    {% endif %}
+  </div>
+
+  <div class="stack" style="margin-top:0">
+    {% if can_edit %}
+      <form method="post" class="card card-pad">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update">
+        <h3>Update ticket</h3>
+        {% with form=update_form %}{% include "includes/form_fields.html" %}{% endwith %}
+        <button class="btn btn-outline btn-block" type="submit">Save changes</button>
+      </form>
+    {% endif %}
+    <div class="card card-pad small">
+      <h3>Customer</h3>
+      <div><strong>{{ ticket.customer.get_full_name|default:ticket.customer.username }}</strong></div>
+      <div class="muted">{{ ticket.customer.email }}</div>
+      <div class="muted">{{ ticket.customer.phone }}</div>
+      {% if other_tickets %}
+        <h3 class="mt-2">Other tickets</h3>
+        {% for t in other_tickets %}<div><a href="{% url 'dashboard:ticket_detail' t.code %}">{{ t.code }}</a> · {{ t.get_status_display }}</div>{% endfor %}
+      {% endif %}
+    </div>
+    {% if ticket.order %}
+      <div class="card card-pad small">
+        <h3>Order <a href="{% url 'dashboard:order_detail' ticket.order.pk %}">{{ ticket.order.number }}</a></h3>
+        <div class="summary-row"><span class="muted">Status</span><span class="pill tone-{{ ticket.order.status|tone }}">{{ ticket.order.get_status_display }}</span></div>
+        <div class="summary-row"><span class="muted">Total</span><span>{{ ticket.order.total|money }}</span></div>
+        <div class="summary-row"><span class="muted">Placed</span><span>{{ ticket.order.created_at|date:"d M Y" }}</span></div>
+        {% if ticket.order.tracking_number %}<div class="summary-row"><span class="muted">Tracking</span><span>{{ ticket.order.carrier }} {{ ticket.order.tracking_number }}</span></div>{% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

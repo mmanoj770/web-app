@@ -1,0 +1,158 @@
+{% load static store_tags %}<!doctype html>
+<html lang="en" data-theme="{{ STORE_THEME }}" data-default-theme="{{ STORE_THEME }}">
+<head>
+  <meta charset="utf-8">
+  {# Apply a visitor's saved theme before the page paints, so there's no flash of the default colours. #}
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('mj-theme');
+        if (saved && {{ THEME_KEYS|to_json|safe }}.indexOf(saved) !== -1) document.documentElement.dataset.theme = saved;
+      } catch (e) { /* storage unavailable */ }
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="theme-color" content="">
+  <title>{% block title %}{{ STORE_NAME }}: smarter shopping with AI{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'img/mj-mark.svg' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{% static 'css/store.css' %}?v={{ ASSET_VERSION }}" rel="stylesheet">
+  {# Prefetch same-site pages when the pointer hovers a link, so navigation feels instant. #}
+  <script type="speculationrules">
+    {"prefetch": [{"where": {"and": [{"href_matches": "/*"}, {"not": {"href_matches": "/admin/*"}},
+      {"not": {"selector_matches": "[data-no-prefetch]"}}]}, "eagerness": "moderate"}]}
+  </script>
+</head>
+<body data-cart-url="{% url 'cart:detail' %}" data-login-url="{% url 'login' %}" data-wishlist-page="{% url 'catalog:wishlist' %}">
+<a class="sr-only" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="{% url 'catalog:home' %}" aria-label="{{ STORE_NAME }} home">
+      {% include "includes/logo_mark.html" %}<span class="wordmark">{{ STORE_NAME }}</span>
+    </a>
+
+    <form class="search" role="search" action="{% url 'catalog:product_list' %}" autocomplete="off">
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input id="search-input" type="search" name="q" placeholder="Search for phones, laptops, brands…"
+               value="{{ request.GET.q }}" aria-label="Search products" data-suggest-url="{% url 'catalog:suggest' %}">
+        <select name="category" aria-label="Category">
+          <option value="">All</option>
+          {% for c in nav_categories %}<option value="{{ c.slug }}" {% if request.GET.category == c.slug %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+        </select>
+        <button class="btn btn-primary btn-sm" type="submit">Search</button>
+      </div>
+      <div class="suggest" id="search-suggest" role="listbox"></div>
+    </form>
+
+    <nav class="header-actions" aria-label="Account">
+      {% if user.is_authenticated %}
+        <div class="dropdown">
+          <button class="hbtn" type="button" data-dropdown-toggle aria-expanded="false">
+            <i class="bi bi-person-circle"></i><span class="label">{{ user.first_name|default:user.username|truncatechars:10 }}</span>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-head">
+              <strong>{{ user.get_full_name|default:user.username }}</strong>
+              <div class="xsmall muted">{{ user.email }}</div>
+            </div>
+            {% if user.is_staff_member %}<a href="{% url 'dashboard:home' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>{% endif %}
+            <a href="{% url 'orders:list' %}"><i class="bi bi-box-seam"></i> My orders</a>
+            <a href="{% url 'catalog:wishlist' %}"><i class="bi bi-heart"></i> Wishlist</a>
+            <a href="{% url 'support:list' %}"><i class="bi bi-life-preserver"></i> My tickets</a>
+            <a href="{% url 'accounts:profile' %}"><i class="bi bi-gear"></i> Account settings</a>
+            <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+              <button type="submit"><i class="bi bi-box-arrow-right"></i> Log out</button>
+            </form>
+          </div>
+        </div>
+        <a class="hbtn" href="{% url 'orders:list' %}"><i class="bi bi-box-seam"></i><span class="label">Orders</span></a>
+      {% else %}
+        <a class="hbtn" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}"><i class="bi bi-person-circle"></i><span class="label">Log in</span></a>
+      {% endif %}
+      <div class="dropdown">
+        <button class="hbtn" type="button" data-dropdown-toggle aria-expanded="false" aria-label="Change colour theme">
+          <i class="bi bi-palette"></i><span class="label">Theme</span>
+        </button>
+        <div class="dropdown-menu theme-menu">
+          <div class="dropdown-head"><strong>Colour theme</strong><div class="xsmall muted">Saved on this device</div></div>
+          {% for key, label, swatch in THEMES %}
+            <button type="button" data-set-theme="{{ key }}"><span class="swatch" style="background: {{ swatch }}"></span> {{ label }}<i class="bi bi-check-lg theme-check"></i></button>
+          {% endfor %}
+        </div>
+      </div>
+      <a class="hbtn" href="{% url 'catalog:wishlist' %}" aria-label="Wishlist">
+        <i class="bi bi-heart"></i><span class="label">Wishlist</span>
+        <span class="count" data-wishlist-count {% if not wishlist_count %}hidden{% endif %}>{{ wishlist_count }}</span>
+      </a>
+      <a class="hbtn" href="{% url 'cart:detail' %}" aria-label="Cart">
+        <i class="bi bi-bag"></i><span class="label">Bag</span>
+        <span class="count" data-cart-count {% if not cart_count %}hidden{% endif %}>{{ cart_count }}</span>
+      </a>
+    </nav>
+  </div>
+  <div class="catnav">
+    <div class="container catnav-inner">
+      {% for c in nav_categories %}
+        <a href="{{ c.get_absolute_url }}" class="{% if request.GET.category == c.slug %}active{% endif %}"><i class="bi bi-{{ c.icon }}"></i> {{ c.name }}</a>
+      {% endfor %}
+      <a href="{% url 'catalog:product_list' %}?sort=discount"><i class="bi bi-lightning-charge"></i> Top deals</a>
+      <a href="{% url 'support:home' %}"><i class="bi bi-life-preserver"></i> Help center</a>
+      <a href="#" class="ai" data-ask="Help me find the right product"><i class="bi bi-stars"></i> Ask AI</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="main">
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a class="logo" href="{% url 'catalog:home' %}">{% include "includes/logo_mark.html" %}<span class="wordmark">{{ STORE_NAME }}</span></a>
+        <p class="mt-2">The latest tech, curated. With an AI assistant that knows our catalog and your orders.</p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        {% for c in nav_categories %}<a href="{{ c.get_absolute_url }}">{{ c.name }}</a>{% endfor %}
+      </div>
+      <div>
+        <h4>Help</h4>
+        <a href="{% url 'support:home' %}">Help center</a>
+        <a href="{% url 'support:create' %}">Raise a ticket</a>
+        <a href="{% url 'orders:list' %}">Track your order</a>
+        <a href="{% url 'support:home' %}#faq">Returns &amp; refunds</a>
+      </div>
+      <div>
+        <h4>Account</h4>
+        <a href="{% url 'orders:list' %}">Orders</a>
+        <a href="{% url 'catalog:wishlist' %}">Wishlist</a>
+        <a href="{% url 'accounts:profile' %}">Settings</a>
+        <a href="{% url 'catalog:credits' %}">Photo credits</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; {% now "Y" %} {{ STORE_NAME }}. Demo store: no real payments are taken.</span>
+      <span>Free delivery · 7-day returns · Secure payments</span>
+    </div>
+  </div>
+</footer>
+
+{% include "assistant/widget.html" %}
+<div class="toasts" role="status" aria-live="polite"></div>
+{{ messages|messages_data|json_script:"django-messages" }}
+
+<script src="{% static 'js/app.js' %}?v={{ ASSET_VERSION }}" defer></script>
+<script src="{% static 'js/assistant.js' %}?v={{ ASSET_VERSION }}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

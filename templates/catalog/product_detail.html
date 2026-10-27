@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}{{ product.name }} · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<nav class="small muted mb-2" aria-label="Breadcrumb">
+  <a href="{% url 'catalog:home' %}">Home</a> ›
+  <a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a> ›
+  <span>{{ product.brand }}</span>
+</nav>
+
+<div class="pdp">
+  <div>
+    <div class="gallery" data-gallery>
+      <div class="gallery-thumbs">
+        {% for image in images %}
+          <button type="button" class="{% if forloop.first %}active{% endif %}" data-full="{{ image.image.url }}"
+                  data-author="{{ image.author }}" data-license="{{ image.license }}"
+                  data-license-url="{{ image.license_url }}" data-source="{{ image.source_url }}"
+                  aria-label="Show photo {{ forloop.counter }}">
+            <img src="{{ image.thumb_url }}" alt="">
+          </button>
+        {% endfor %}
+      </div>
+      <div class="gallery-main">
+        <button class="wish-btn {% if in_wishlist %}saved{% endif %}" type="button"
+                data-wishlist-url="{% url 'catalog:wishlist_toggle' product.pk %}" aria-pressed="{{ in_wishlist|yesno:'true,false' }}"
+                aria-label="Save to wishlist"><i class="bi bi-heart"></i></button>
+        {% if images %}
+          <img src="{{ images.0.image.url }}" alt="{{ product.name }}">
+        {% else %}
+          <div class="placeholder" style="height:100%;display:grid;place-items:center;font-size:64px;color:var(--text-3)"><i class="bi bi-box-seam"></i></div>
+        {% endif %}
+      </div>
+      {% if images %}{% with first=images.0 %}
+        <p class="credit" data-credit {% if not first.source_url %}hidden{% endif %}>
+          Photo: <span data-c-author>{{ first.author|default:"Unknown" }}</span> ·
+          <a data-c-license href="{{ first.license_url|default:first.source_url }}" target="_blank" rel="noopener">{{ first.license }}</a> ·
+          <a data-c-source href="{{ first.source_url }}" target="_blank" rel="noopener">Wikimedia Commons</a>
+        </p>
+      {% endwith %}{% endif %}
+    </div>
+  </div>
+
+  <div class="pdp-info">
+    <div class="eyebrow">{{ product.brand }}</div>
+    <h1>{{ product.name }}</h1>
+    <div class="pdp-rating">
+      {% if product.rating_count %}
+        <span class="rating-pill">{{ product.rating_avg }} <i class="bi bi-star-fill"></i></span>
+        <a href="#reviews">{{ product.rating_count }} rating{{ product.rating_count|pluralize }} &amp; reviews</a>
+      {% else %}
+        <a href="#reviews">Be the first to review</a>
+      {% endif %}
+    </div>
+
+    <div class="pdp-price">
+      <span class="price-lg">{{ product.price|money }}</span>
+      {% if product.discount_percent %}
+        <span class="mrp" style="font-size:17px">MRP {{ product.list_price|money }}</span>
+        <span class="off" style="font-size:17px">{{ product.discount_percent }}% off</span>
+      {% endif %}
+    </div>
+    <div class="small muted">Inclusive of all taxes{% if product.savings %} · You save {{ product.savings|money }}{% endif %}</div>
+
+    {% if product.highlights %}
+      <ul class="highlights">
+        {% for h in product.highlights %}<li><i class="bi bi-check-circle-fill"></i><span>{{ h }}</span></li>{% endfor %}
+      </ul>
+    {% endif %}
+
+    <div class="buy-box">
+      {% if product.in_stock %}
+        <div class="row-between">
+          <span class="pill tone-green"><span class="dot"></span> In stock</span>
+          {% if product.stock <= 5 %}<span class="small" style="color: var(--orange); font-weight:600">Hurry, only {{ product.stock }} left</span>{% endif %}
+        </div>
+        <div class="mt-2">
+          <form class="delivery-check" data-pincode>
+            <input class="input" inputmode="numeric" maxlength="6" placeholder="Enter PIN code" aria-label="PIN code">
+            <button class="btn btn-sm" type="submit">Check</button>
+          </form>
+          <div class="small mt-1" data-pincode-result><i class="bi bi-truck"></i> Free delivery in 3-8 days</div>
+        </div>
+        <form method="post" action="{% url 'cart:add' product.pk %}" data-cart-form class="mt-2">
+          {% csrf_token %}
+          <div class="row">
+            <span class="small muted">Quantity</span>
+            <div class="qty">
+              <button type="button" data-step="-1" aria-label="Decrease">−</button>
+              <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" aria-label="Quantity">
+              <button type="button" data-step="1" aria-label="Increase">+</button>
+            </div>
+          </div>
+          <div class="buy-actions">
+            <button class="btn btn-cta btn-lg" type="submit"><i class="bi bi-bag-plus"></i> Add to bag</button>
+            <button class="btn btn-dark btn-lg" type="submit" name="buy_now" value="1"><i class="bi bi-lightning-charge-fill"></i> Buy now</button>
+          </div>
+        </form>
+      {% else %}
+        <span class="pill tone-red"><span class="dot"></span> Currently out of stock</span>
+        <p class="small muted mt-1 mb-0">Save it to your wishlist and check back soon, or ask our assistant for a similar product.</p>
+      {% endif %}
+
+      <div class="offers">
+        <div class="offer"><i class="bi bi-tag-fill"></i><span><strong>Bank offer:</strong> 10% instant discount on select credit cards (demo)</span></div>
+        <div class="offer"><i class="bi bi-arrow-repeat"></i><span><strong>7-day returns</strong> for damaged, defective or wrong items</span></div>
+        <div class="offer"><i class="bi bi-shield-check"></i><span><strong>Secure payment</strong> with UPI or card</span></div>
+      </div>
+      <button class="btn btn-outline btn-block mt-2" type="button"
+              data-ask="Tell me about the {{ product.name }}. Is it good value and how does it compare with similar products?">
+        <i class="bi bi-stars"></i> Ask AI about this product
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="two-col section">
+  <section class="card reveal">
+    <div class="card-head"><h2>About this item</h2></div>
+    <div class="card-body">
+      <p>{{ product.description|linebreaksbr }}</p>
+      {% if product.specs %}
+        <table class="specs">
+          <tbody>
+            {% for key, value in product.specs.items %}<tr><th scope="row">{{ key }}</th><td>{{ value }}</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card reveal" id="reviews">
+    <div class="card-head"><h2>Ratings &amp; reviews</h2></div>
+    <div class="card-body">
+      {% if product.rating_count %}
+        <div class="rating-summary">
+          <div class="rating-big">
+            <div class="num">{{ product.rating_avg }}</div>
+            {% include "includes/stars.html" with rating=product.rating_avg %}
+            <div class="small muted mt-1">{{ product.rating_count }} rating{{ product.rating_count|pluralize }}</div>
+          </div>
+          <div class="stack" style="--gap: 6px">
+            {% for stars, count, pct in rating_bars %}
+              <div class="bar-row" style="margin-top:6px"><span>{{ stars }}★</span><div class="bar"><span style="width: {{ pct }}%"></span></div><span>{{ count }}</span></div>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <p class="muted">No reviews yet.</p>
+      {% endif %}
+
+      {% if can_review %}
+        <details class="mt-3" {% if not product.rating_count %}open{% endif %}>
+          <summary class="btn btn-outline btn-sm">Write a review</summary>
+          <form method="post" action="{% url 'catalog:review_create' product.slug %}" class="mt-2">
+            {% csrf_token %}
+            <div class="field">
+              <span class="label">Your rating</span>
+              <div class="star-input">
+                {% for i in "54321" %}
+                  <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" required>
+                  <label for="star{{ i }}" title="{{ i }} star{{ i|pluralize }}"><i class="bi bi-star-fill"></i></label>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="field"><label for="id_title">Title</label>{{ review_form.title }}</div>
+            <div class="field"><label for="id_body">Your review</label>{{ review_form.body }}</div>
+            <button class="btn btn-primary" type="submit">Submit review</button>
+          </form>
+        </details>
+      {% elif not user.is_authenticated %}
+        <p class="small mt-2"><a href="{% url 'login' %}?next={{ request.path|urlencode }}%23reviews">Log in</a> to write a review.</p>
+      {% endif %}
+
+      {% for review in reviews %}
+        <div class="review">
+          <div class="review-head">
+            <span class="rating-pill">{{ review.rating }} <i class="bi bi-star-fill"></i></span>
+            <strong>{{ review.title }}</strong>
+          </div>
+          {% if review.body %}<p class="mt-1 mb-0">{{ review.body }}</p>{% endif %}
+          <div class="review-meta">
+            {{ review.user.first_name|default:review.user.username }} · {{ review.created_at|date:"d M Y" }}
+            {% if review.verified_purchase %} · <span class="off"><i class="bi bi-patch-check-fill"></i> Verified purchase</span>{% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+{% include "includes/rail.html" with products=similar title="Similar products" eyebrow="You may also like" more_url=product.category.get_absolute_url %}
+{% include "includes/rail.html" with products=recently_viewed title="Recently viewed" more_url="" eyebrow="" %}
+{% endblock %}

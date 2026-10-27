@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}Help center · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<section class="help-hero">
+  <div class="eyebrow">Help center</div>
+  <h1>How can we help{% if user.is_authenticated %}, {{ user.first_name|default:user.username }}{% endif %}?</h1>
+  <p class="muted" style="font-size: 19px">Get instant answers from our AI assistant, or raise a ticket and our team will take it from there.</p>
+  <div class="row mt-3" style="justify-content:center; flex-wrap: wrap">
+    <button class="btn btn-primary btn-lg" type="button" data-ask="I need help with an order"><i class="bi bi-stars"></i> Chat with AI assistant</button>
+    <a class="btn btn-white btn-lg" href="{% url 'support:create' %}"><i class="bi bi-ticket-perforated"></i> Raise a ticket</a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head"><h2>What do you need help with?</h2></div>
+  <div class="quick-grid">
+    {% for key, icon, title, subtitle in quick_help %}
+      <a class="quick-card reveal" href="{% url 'support:create' %}?category={{ key }}">
+        <span class="icon"><i class="bi bi-{{ icon }}"></i></span>
+        <span><strong>{{ title }}</strong><span>{{ subtitle }}</span></span>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+{% if user.is_authenticated %}
+<section class="section two-col">
+  <div class="card">
+    <div class="card-head"><h3>Your recent orders</h3><a class="small" href="{% url 'orders:list' %}">All orders</a></div>
+    {% for order in recent_orders %}
+      <div class="list-row">
+        {% with item=order.items.all.0 %}{% with image=item.product.primary_image %}
+          {% if image %}<img class="thumb-sm" src="{{ image.thumb_url }}" alt="">{% endif %}
+        {% endwith %}{% endwith %}
+        <div class="grow small">
+          <a href="{{ order.get_absolute_url }}" style="font-weight:600">{{ order.number }}</a>
+          <div class="muted">{{ order.created_at|date:"d M Y" }} · <span class="pill tone-{{ order.status|tone }}">{{ order.get_status_display }}</span></div>
+        </div>
+        <a class="btn btn-white btn-sm" href="{% url 'support:create' %}?order={{ order.pk }}">Get help</a>
+      </div>
+    {% empty %}
+      <div class="list-row small muted">No orders yet.</div>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Your open tickets</h3><a class="small" href="{% url 'support:list' %}">All tickets</a></div>
+    {% for t in open_tickets %}
+      <a class="list-row" href="{{ t.get_absolute_url }}">
+        <div class="grow small"><strong style="color:var(--text)">{{ t.code }}</strong> <span style="color:var(--text)">· {{ t.subject }}</span>
+          <div class="muted">Updated {{ t.updated_at|timesince }} ago</div></div>
+        <span class="pill tone-{{ t.status|tone }}">{{ t.get_status_display }}</span>
+      </a>
+    {% empty %}
+      <div class="list-row small muted">No open tickets. Everything looks good!</div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="section" id="faq">
+  <div class="section-head"><h2>Frequently asked questions</h2></div>
+  <div class="two-col">
+    {% for group, items in faqs %}
+      <div class="card faq reveal" {% if forloop.last %}style="grid-column: 1 / -1"{% endif %}>
+        <div class="card-head"><h3>{{ group }}</h3></div>
+        {% for question, answer in items %}
+          <details><summary>{{ question }}</summary><p>{{ answer }}</p></details>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="panel center">
+    <h2>Still need help?</h2>
+    <p class="muted">Our support team replies within 4 hours for payment and delivery issues, and within 24 hours for everything else.</p>
+    <a class="btn btn-primary" href="{% url 'support:create' %}">Raise a ticket</a>
+  </div>
+</section>
+{% endblock %}

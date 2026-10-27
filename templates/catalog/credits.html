@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Photo credits · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="container-narrow" style="margin: 0 auto">
+  <h1>Photo credits</h1>
+  <p class="muted">Product photos are openly licensed images from Wikimedia Commons, shown under the licence chosen by each photographer. Thank you to everyone who shares their work.</p>
+  <div class="card">
+    {% for image in images %}
+      <div class="list-row">
+        <img class="thumb-sm" src="{{ image.thumb_url }}" alt="" loading="lazy">
+        <div class="grow">
+          <a href="{{ image.product.get_absolute_url }}"><strong>{{ image.product.name }}</strong></a>
+          <div class="small muted">Photo by {{ image.author|default:"unknown author" }} ·
+            <a href="{{ image.license_url|default:image.source_url }}" target="_blank" rel="noopener">{{ image.license|default:"see source" }}</a> ·
+            <a href="{{ image.source_url }}" target="_blank" rel="noopener">source</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="list-row muted">No credited photos yet.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

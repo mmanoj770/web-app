@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}{{ order.number }} · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="account">
+  {% include "includes/account_nav.html" with active="orders" %}
+  <div>
+    <div class="row-between mb-2">
+      <div>
+        <a class="small" href="{% url 'orders:list' %}"><i class="bi bi-chevron-left"></i> All orders</a>
+        <h1 class="page-title mt-1">Order {{ order.number }}</h1>
+        <div class="small muted">Placed {{ order.created_at|date:"d M Y, H:i" }} · <span class="pill tone-{{ order.status|tone }}">{{ order.get_status_display }}</span></div>
+      </div>
+      <div class="row wrap">
+        {% if order.can_pay %}<a class="btn btn-success" href="{% url 'orders:pay' order.pk %}">Pay {{ order.total|money }}</a>{% endif %}
+        {% if order.can_cancel %}
+          <form method="post" action="{% url 'orders:cancel' order.pk %}" data-confirm="Cancel this order?">
+            {% csrf_token %}<button class="btn btn-danger" type="submit">Cancel order</button>
+          </form>
+        {% endif %}
+        <a class="btn btn-white" href="{% url 'support:create' %}?order={{ order.pk }}"><i class="bi bi-life-preserver"></i> Get help</a>
+      </div>
+    </div>
+
+    {% if order.status != 'cancelled' %}
+      <div class="card card-pad mb-2">
+        <div class="row-between mb-2">
+          <strong>{% if order.status == 'delivered' %}Delivered{% elif order.status == 'pending' %}Waiting for payment{% else %}Arriving by {{ order.expected_delivery|date:"l, d M" }}{% endif %}</strong>
+          {% if order.tracking_number %}<span class="small muted">{{ order.carrier }} · {{ order.tracking_number }}</span>{% endif %}
+        </div>
+        <div class="tracker">
+          {% for step in order.tracker %}
+            <div class="track-step {% if step.done %}done{% endif %} {% if step.current %}current{% endif %}">
+              <div class="track-dot">{% if step.done %}<i class="bi bi-check"></i>{% endif %}</div>
+              <div>
+                <div class="track-label">{{ step.label }}</div>
+                <div class="track-date">{% if step.date %}{{ step.date|date:"d M, H:i" }}{% else %}&nbsp;{% endif %}</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="card card-pad mb-2"><span class="pill tone-gray">This order was cancelled</span> <span class="small muted">Any payment will be refunded within 5-7 business days.</span></div>
+    {% endif %}
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head"><h3>Items</h3></div>
+        {% for item in order.items.all %}{% with product=item.product image=item.product.primary_image %}
+          <div class="list-row">
+            {% if image %}<img class="thumb-sm" src="{{ image.thumb_url }}" alt="">{% endif %}
+            <div class="grow">
+              {% if product %}<a href="{{ product.get_absolute_url }}" style="color: var(--text); font-weight:500">{{ item.product_name }}</a>{% else %}<span style="font-weight:500">{{ item.product_name }}</span>{% endif %}
+              <div class="small muted">Qty {{ item.quantity }} · {{ item.unit_price|money }} each</div>
+              {% if order.status == 'delivered' and product and product.pk not in reviewed %}
+                <a class="small" href="{{ product.get_absolute_url }}#reviews"><i class="bi bi-star"></i> Rate &amp; review</a>
+              {% endif %}
+            </div>
+            <div style="font-weight:600">{{ item.line_total|money }}</div>
+          </div>
+        {% endwith %}{% endfor %}
+        <div class="list-row" style="justify-content: space-between"><strong>Total</strong><strong>{{ order.total|money }}</strong></div>
+      </div>
+
+      <div class="stack" style="margin-top:0">
+        <div class="card">
+          <div class="card-head"><h3>Delivery address</h3></div>
+          <div class="card-body small">{{ order.full_name }}<br>{{ order.address_line }}<br>{{ order.city }} {{ order.postal_code }}<br>{{ order.phone }}</div>
+        </div>
+        {% if order.payments.all %}
+          <div class="card">
+            <div class="card-head"><h3>Payments</h3></div>
+            {% for p in order.payments.all %}
+              <div class="list-row small">
+                <i class="bi bi-{% if p.method == 'upi' %}phone{% else %}credit-card{% endif %}"></i>
+                <div class="grow">{{ p.get_method_display }} {% if p.card_last4 %}•••• {{ p.card_last4 }}{% endif %}{% if p.upi_id %}{{ p.upi_id }}{% endif %}
+                  <div class="muted">{{ p.created_at|date:"d M Y, H:i" }}{% if p.failure_reason %} · {{ p.failure_reason }}{% endif %}</div></div>
+                <span class="pill tone-{{ p.status|tone }}">{{ p.get_status_display }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% if order.tickets.all %}
+          <div class="card">
+            <div class="card-head"><h3>Support tickets</h3></div>
+            {% for t in order.tickets.all %}
+              <a class="list-row small" href="{{ t.get_absolute_url }}">
+                <div class="grow"><strong>{{ t.code }}</strong> · {{ t.subject }}</div>
+                <span class="pill tone-{{ t.status|tone }}">{{ t.get_status_display }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="card card-pad">
+          <strong>Need help with this order?</strong>
+          <p class="small muted mt-1">Ask our assistant, or raise a ticket and our team will sort it out.</p>
+          <div class="row wrap">
+            <button class="btn btn-outline btn-sm" type="button" data-ask="I need help with my order {{ order.number }}"><i class="bi bi-stars"></i> Ask AI</button>
+            <a class="btn btn-white btn-sm" href="{% url 'support:create' %}?order={{ order.pk }}">Raise a ticket</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

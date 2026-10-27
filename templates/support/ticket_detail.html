@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}{{ ticket.code }} · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="account">
+  {% include "includes/account_nav.html" with active="tickets" %}
+  <div>
+    <a class="small" href="{% url 'support:list' %}"><i class="bi bi-chevron-left"></i> All tickets</a>
+    <div class="row-between mt-1 mb-2">
+      <div>
+        <div class="eyebrow">{{ ticket.code }} · {{ ticket.get_category_display }}</div>
+        <h1 class="page-title">{{ ticket.subject }}</h1>
+      </div>
+      {% if ticket.is_active %}
+        <form method="post" action="{% url 'support:resolve' ticket.code %}" data-confirm="Mark this ticket as resolved?">
+          {% csrf_token %}<button class="btn btn-white btn-sm" type="submit"><i class="bi bi-check2-circle"></i> Mark as resolved</button>
+        </form>
+      {% endif %}
+    </div>
+
+    <div class="card card-pad mb-2">
+      <div class="tracker">
+        {% for step in ticket.progress %}
+          <div class="track-step {% if step.done %}done{% endif %} {% if step.current %}current{% endif %}">
+            <div class="track-dot">{% if step.done %}<i class="bi bi-check"></i>{% endif %}</div>
+            <div><div class="track-label">{{ step.label }}</div></div>
+          </div>
+        {% endfor %}
+      </div>
+      <p class="small muted center mt-2 mb-0">
+        {% if ticket.status == 'waiting_customer' %}We're waiting for your reply below.
+        {% elif ticket.is_active %}{% if ticket.assigned_to %}{{ ticket.assigned_to.first_name|default:"An agent" }} from our support team is handling this.{% else %}An agent will pick this up shortly.{% endif %}
+          {% if not ticket.first_response_at %}Expected first reply by {{ ticket.response_due|date:"D d M, H:i" }}.{% endif %}
+        {% else %}This ticket was resolved {{ ticket.resolved_at|timesince }} ago. Reply below if you still need help.{% endif %}
+      </p>
+    </div>
+
+    {% if ticket.can_rate %}
+      <form method="post" action="{% url 'support:feedback' ticket.code %}" class="card card-pad mb-2">
+        {% csrf_token %}
+        <strong>How did we do?</strong>
+        <div class="row wrap mt-1">
+          <div class="star-input">
+            {% for i in "54321" %}
+              <input type="radio" id="csat{{ i }}" name="csat_rating" value="{{ i }}" required>
+              <label for="csat{{ i }}" title="{{ i }} star{{ i|pluralize }}"><i class="bi bi-star-fill"></i></label>
+            {% endfor %}
+          </div>
+          <input class="input input-sm grow" name="csat_comment" maxlength="500" placeholder="Anything we could do better? (optional)" style="min-width:200px">
+          <button class="btn btn-primary btn-sm" type="submit">Send feedback</button>
+        </div>
+      </form>
+    {% elif ticket.csat_rating %}
+      <div class="card card-pad mb-2 small">You rated this support experience {% include "includes/stars.html" with rating=ticket.csat_rating %}. Thank you!</div>
+    {% endif %}
+
+    <div class="two-col wide-left">
+      <div class="card card-pad">
+        <div class="thread">
+          <div class="bubble mine">
+            <div class="meta">You · {{ ticket.created_at|date:"d M, H:i" }}</div>
+            {{ ticket.description|linebreaksbr }}
+            {% if opening_photos %}
+              <div class="bubble-photos">{% for a in opening_photos %}<img src="{{ a.file.url }}" alt="Attached photo" data-lightbox>{% endfor %}</div>
+            {% endif %}
+          </div>
+          {% for m in thread %}
+            {% if m.is_system %}
+              <div class="system-note">{{ m.body }} · {{ m.created_at|date:"d M, H:i" }}</div>
+            {% else %}
+              <div class="bubble {% if m.author_id == user.pk %}mine{% else %}theirs{% endif %}">
+                <div class="meta">{% if m.author_id == user.pk %}You{% else %}{{ m.author.first_name|default:"Support team" }} · Support{% endif %} · {{ m.created_at|date:"d M, H:i" }}</div>
+                {{ m.body|linebreaksbr }}
+                {% if m.attachments.all %}
+                  <div class="bubble-photos">{% for a in m.attachments.all %}<img src="{{ a.file.url }}" alt="Attached photo" data-lightbox>{% endfor %}</div>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        {% if ticket.status != 'closed' %}
+          <form method="post" enctype="multipart/form-data" class="mt-3">
+            {% csrf_token %}
+            <div class="field mb-1">
+              <label for="{{ form.body.id_for_label }}" class="sr-only">Reply</label>
+              {{ form.body|bs }}
+              {% for error in form.body.errors %}<div class="error">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="row-between">
+              <label class="btn btn-ghost btn-sm" style="cursor:pointer"><i class="bi bi-paperclip"></i> Add photos
+                <input type="file" name="attachments" accept="image/*" multiple hidden data-preview="#reply-previews"></label>
+              <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Send reply</button>
+            </div>
+            <div class="previews" id="reply-previews"></div>
+            {% for error in form.attachments.errors %}<div class="error">{{ error }}</div>{% endfor %}
+          </form>
+        {% else %}
+          <div class="tip mt-3"><i class="bi bi-info-circle"></i><span>This ticket is closed. <a href="{% url 'support:create' %}">Open a new ticket</a> if you need more help.</span></div>
+        {% endif %}
+      </div>
+
+      <div class="stack" style="margin-top:0">
+        <div class="card card-pad small">
+          <div class="summary-row"><span class="muted">Status</span><span class="pill tone-{{ ticket.status|tone }}">{{ ticket.get_status_display }}</span></div>
+          <div class="summary-row"><span class="muted">Ticket ID</span><strong>{{ ticket.code }}</strong></div>
+          <div class="summary-row"><span class="muted">Opened</span><span>{{ ticket.created_at|date:"d M Y" }}</span></div>
+          <div class="summary-row"><span class="muted">Handled by</span><span>{{ ticket.assigned_to.first_name|default:"Support team" }}</span></div>
+          <div class="summary-row"><span class="muted">Raised via</span><span>{{ ticket.get_source_display }}</span></div>
+        </div>
+        {% if ticket.order %}
+          <a class="card card-pad small" href="{{ ticket.order.get_absolute_url }}" style="display:block; color: inherit">
+            <div class="muted">Related order</div>
+            <strong>{{ ticket.order.number }}</strong> · <span class="pill tone-{{ ticket.order.status|tone }}">{{ ticket.order.get_status_display }}</span>
+            <div class="mt-1">{{ ticket.order.total|money }} · {{ ticket.order.created_at|date:"d M Y" }}</div>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

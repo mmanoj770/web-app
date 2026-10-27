@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+{% with name=request.resolver_match.url_name %}
+<div class="row-between mb-2">
+  <div>
+    <div class="eyebrow">{% if user.is_store_admin %}Administrator{% else %}Support agent{% endif %} dashboard</div>
+  </div>
+</div>
+<nav class="segmented dash-nav" aria-label="Dashboard sections">
+  <a class="{% if name == 'home' %}active{% endif %}" href="{% url 'dashboard:home' %}"><i class="bi bi-speedometer2"></i> Overview</a>
+  <a class="{% if 'ticket' in name %}active{% endif %}" href="{% url 'dashboard:tickets' %}"><i class="bi bi-life-preserver"></i> Tickets</a>
+  <a class="{% if 'order' in name %}active{% endif %}" href="{% url 'dashboard:orders' %}"><i class="bi bi-box-seam"></i> Orders</a>
+  {% if user.is_store_admin %}
+    <a class="{% if 'product' in name %}active{% endif %}" href="{% url 'dashboard:products' %}"><i class="bi bi-tags"></i> Products</a>
+    <a class="{% if 'user' in name %}active{% endif %}" href="{% url 'dashboard:users' %}"><i class="bi bi-people"></i> Users</a>
+    <a class="{% if name == 'system' %}active{% endif %}" href="{% url 'dashboard:system' %}"><i class="bi bi-activity"></i> System</a>
+    <a href="{% url 'admin:index' %}" data-no-prefetch><i class="bi bi-gear"></i> Django admin</a>
+  {% endif %}
+</nav>
+{% endwith %}
+{% block dashboard %}{% endblock %}
+{% endblock %}

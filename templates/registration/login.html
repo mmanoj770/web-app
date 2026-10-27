@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Sign in · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="auth">
+  <div class="panel">
+    <div class="center mb-2">{% include "includes/logo_mark.html" with size=56 %}</div>
+    <h1>Sign in</h1>
+    <p class="center muted">to track orders, save favourites and get help faster.</p>
+    <form method="post" class="mt-3">
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Sign in</button>
+    </form>
+    <p class="center small mt-3 mb-0">New to {{ STORE_NAME }}? <a href="{% url 'accounts:register' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Create your account</a></p>
+  </div>
+  <div class="demo-logins center">
+    <span>Demo logins: <code>customer</code> / <code>Customer@12345</code> · <code>agent1</code> / <code>Agent@12345</code> · <code>admin</code> / <code>Admin@12345</code></span>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% if products %}
+<section class="section reveal">
+  <div class="section-head">
+    <div>
+      {% if eyebrow %}<div class="eyebrow">{{ eyebrow }}</div>{% endif %}
+      <h2>{{ title }}</h2>
+    </div>
+    {% if more_url %}<a class="link-more" href="{{ more_url }}">See all</a>{% endif %}
+  </div>
+  <div class="rail">
+    <button class="rail-btn prev" type="button" aria-label="Scroll left" hidden><i class="bi bi-chevron-left"></i></button>
+    <div class="rail-track">
+      {% for product in products %}{% include "includes/product_card.html" %}{% endfor %}
+    </div>
+    <button class="rail-btn next" type="button" aria-label="Scroll right"><i class="bi bi-chevron-right"></i></button>
+  </div>
+</section>
+{% endif %}

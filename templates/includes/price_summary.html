@@ -1,0 +1,8 @@
+{% load store_tags %}<div class="card card-pad">
+  <div class="eyebrow mb-1">Price details</div>
+  <div class="summary-row"><span>Price ({{ summary.count }} item{{ summary.count|pluralize }})</span><span>{{ summary.mrp|money }}</span></div>
+  {% if summary.discount %}<div class="summary-row"><span>Discount</span><span class="off">−{{ summary.discount|money }}</span></div>{% endif %}
+  <div class="summary-row"><span>Delivery</span><span class="off">Free</span></div>
+  <div class="summary-row summary-total"><span>Total</span><span>{{ summary.total|money }}</span></div>
+  {% if summary.discount %}<div class="savings"><i class="bi bi-piggy-bank"></i> You save {{ summary.discount|money }} on this order</div>{% endif %}
+</div>

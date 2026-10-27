@@ -1,0 +1,7 @@
+# Local shopping-assistant model for MJ.
+# Build with:  ollama create mj-assistant -f ollama/Modelfile
+FROM qwen2.5:3b
+# Room for the system prompt, tool definitions, product data and a few chat turns.
+PARAMETER num_ctx 8192
+# Factual, consistent answers about products and orders.
+PARAMETER temperature 0.3

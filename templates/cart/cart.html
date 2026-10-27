@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}Cart · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+{% if lines %}
+<h1 class="page-title">Shopping bag</h1>
+<p class="muted">{{ summary.count }} item{{ summary.count|pluralize }} · Free delivery</p>
+<div class="layout-aside">
+  <div class="card">
+    {% for line in lines %}{% with product=line.product image=line.product.primary_image %}
+      <div class="cart-line">
+        <a href="{{ product.get_absolute_url }}">
+          {% if image %}<img src="{{ image.thumb_url }}" alt="{{ product.name }}">{% else %}<div class="thumb"></div>{% endif %}
+        </a>
+        <div>
+          <div class="small muted">{{ product.brand }}</div>
+          <a href="{{ product.get_absolute_url }}" style="color: var(--text); font-weight: 500">{{ product.name }}</a>
+          <div class="row mt-1 wrap" style="gap: 8px">
+            <span class="price" style="font-size:17px">{{ product.price|money }}</span>
+            {% if product.discount_percent %}<span class="mrp">{{ product.list_price|money }}</span><span class="off">{{ product.discount_percent }}% off</span>{% endif %}
+          </div>
+          {% if product.stock <= 5 %}<div class="xsmall" style="color: var(--orange); font-weight:600">Only {{ product.stock }} left in stock</div>{% endif %}
+          <div class="cart-line-actions">
+            <form method="post" action="{% url 'cart:update' product.pk %}" data-autosubmit>
+              {% csrf_token %}
+              <div class="qty">
+                <button type="button" data-step="-1" aria-label="Decrease">−</button>
+                <input type="number" name="quantity" value="{{ line.quantity }}" min="0" max="{{ product.stock }}" aria-label="Quantity">
+                <button type="button" data-step="1" aria-label="Increase">+</button>
+              </div>
+            </form>
+            <form method="post" action="{% url 'cart:save_for_later' product.pk %}">
+              {% csrf_token %}<button class="btn btn-ghost btn-sm" type="submit"><i class="bi bi-heart"></i> Save for later</button>
+            </form>
+            <form method="post" action="{% url 'cart:remove' product.pk %}">
+              {% csrf_token %}<button class="btn btn-ghost btn-sm" type="submit" style="color: var(--red)"><i class="bi bi-trash"></i> Remove</button>
+            </form>
+          </div>
+        </div>
+        <div class="price" style="text-align:right">{{ line.line_total|money }}</div>
+      </div>
+    {% endwith %}{% endfor %}
+  </div>
+  <aside class="sticky-aside">
+    <div class="card card-pad">
+      <div class="eyebrow mb-1">Price details</div>
+      <div class="summary-row"><span>Price ({{ summary.count }} item{{ summary.count|pluralize }})</span><span>{{ summary.mrp|money }}</span></div>
+      {% if summary.discount %}<div class="summary-row"><span>Discount</span><span class="off">−{{ summary.discount|money }}</span></div>{% endif %}
+      <div class="summary-row"><span>Delivery</span><span class="off">Free</span></div>
+      <div class="summary-row summary-total"><span>Total</span><span>{{ summary.total|money }}</span></div>
+      {% if summary.discount %}<div class="savings"><i class="bi bi-piggy-bank"></i> You save {{ summary.discount|money }} on this order</div>{% endif %}
+      <a href="{% url 'orders:checkout' %}" class="btn btn-primary btn-lg btn-block mt-2">Check out</a>
+      {% if not user.is_authenticated %}<p class="xsmall muted center mt-1 mb-0">You'll sign in or create an account next. Your bag is saved.</p>{% endif %}
+    </div>
+    <p class="xsmall muted center mt-2"><i class="bi bi-shield-lock"></i> Safe and secure payments · 7-day returns</p>
+  </aside>
+</div>
+{% else %}
+  <div class="card empty">
+    <i class="bi bi-bag"></i>
+    <h2>Your bag is empty</h2>
+    <p class="muted">Find something you love, or let our AI assistant suggest a few ideas.</p>
+    <div class="row" style="justify-content:center">
+      <a class="btn btn-primary" href="{% url 'catalog:product_list' %}">Start shopping</a>
+      <button class="btn btn-white" type="button" data-ask="Show me today's best deals"><i class="bi bi-stars"></i> Today's best deals</button>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

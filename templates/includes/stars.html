@@ -1,0 +1,1 @@
+{% load store_tags %}<span class="stars" aria-label="{{ rating }} out of 5 stars">{% for s in rating|stars %}<i class="bi bi-star{% if s == 'full' %}-fill{% elif s == 'half' %}-half{% endif %}"></i>{% endfor %}</span>

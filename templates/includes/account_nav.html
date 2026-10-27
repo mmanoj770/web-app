@@ -1,0 +1,7 @@
+<nav class="side-nav" aria-label="Your account">
+  <a href="{% url 'orders:list' %}" class="{% if active == 'orders' %}active{% endif %}"><i class="bi bi-box-seam"></i> My orders</a>
+  <a href="{% url 'catalog:wishlist' %}" class="{% if active == 'wishlist' %}active{% endif %}"><i class="bi bi-heart"></i> Wishlist</a>
+  <a href="{% url 'support:list' %}" class="{% if active == 'tickets' %}active{% endif %}"><i class="bi bi-life-preserver"></i> Support tickets</a>
+  <a href="{% url 'accounts:profile' %}" class="{% if active == 'profile' %}active{% endif %}"><i class="bi bi-person"></i> Profile &amp; address</a>
+  <a href="{% url 'password_change' %}"><i class="bi bi-key"></i> Change password</a>
+</nav>
