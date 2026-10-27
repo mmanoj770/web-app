@@ -139,6 +139,8 @@ def _database_from_url(url):
         'PORT': str(parsed.port or ''),
         'OPTIONS': {'sslmode': options.get('sslmode', 'require')},
         'CONN_MAX_AGE': 0 if ON_VERCEL else 60,
+        # Needed behind a transaction-mode pooler such as Neon's (hosts ending in "-pooler").
+        'DISABLE_SERVER_SIDE_CURSORS': True,
     }
 
 
