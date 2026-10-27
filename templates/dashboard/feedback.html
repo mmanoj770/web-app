@@ -1,0 +1,81 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block dashboard %}
+<h1 class="page-title">Feedback</h1>
+<p class="muted">How well the AI assistant and the support team are doing, from customers' 👍/👎 on chat replies and their ticket ratings.</p>
+
+<div class="stat-grid mt-2">
+  <div class="card stat">
+    <p class="label">Helpful chat replies</p>
+    <div class="value">{% if helpful_rate is not None %}{{ helpful_rate }}%{% else %}–{% endif %}</div>
+    <div class="xsmall muted">{{ helpful }} 👍 · {{ unhelpful }} 👎 of {{ chats }} replies</div>
+  </div>
+  <div class="card stat">
+    <p class="label">Ticket satisfaction</p>
+    <div class="value">{% if csat.avg %}{{ csat.avg|floatformat:1 }}<span class="small muted"> / 5</span>{% else %}–{% endif %}</div>
+    <div class="xsmall muted">{{ csat.count }} rating{{ csat.count|pluralize }}</div>
+  </div>
+  <div class="card stat">
+    <p class="label">Questions sent to the team</p>
+    <div class="value">{{ escalations|length }}</div>
+    <div class="xsmall muted">Tickets the assistant raised (latest 10)</div>
+  </div>
+  <div class="card stat">
+    <p class="label">MongoDB</p>
+    <div class="value small" style="font-size: 18px">{% if mongo_ok %}Connected{% elif mongo_ok is None %}Not configured{% else %}Unreachable{% endif %}</div>
+    <div class="xsmall muted">{% if mongo_counts %}{{ mongo_counts.chats }} chats · {{ mongo_counts.feedback }} feedback{% else %}{{ mongo_detail }}{% endif %}</div>
+  </div>
+</div>
+
+<div class="two-col mt-2">
+  <div class="card">
+    <div class="card-head"><h3>Replies marked not helpful</h3></div>
+    {% for item in unhelpful_replies %}
+      <div class="list-row small" style="display:block">
+        <strong>{{ item.question|default:"(question not found)"|truncatechars:120 }}</strong>
+        <div class="muted">{{ item.reply.content|truncatechars:160 }}</div>
+        <div class="xsmall muted">{{ item.when|timesince }} ago</div>
+      </div>
+    {% empty %}
+      <div class="list-row small muted">No 👎 yet.</div>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Questions the assistant couldn't answer</h3></div>
+    {% for ticket in escalations %}
+      <a class="list-row small" href="{% url 'dashboard:ticket_detail' ticket.code %}" style="color:inherit">
+        <span class="grow"><strong>{{ ticket.code }}</strong> {{ ticket.subject|truncatechars:90 }}</span>
+        <span class="pill">{{ ticket.get_status_display }}</span>
+      </a>
+    {% empty %}
+      <div class="list-row small muted">None yet: the assistant answered everything.</div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="two-col mt-2">
+  <div class="card">
+    <div class="card-head"><h3>Ticket ratings</h3></div>
+    {% for stars, count in csat_breakdown %}
+      <div class="list-row small"><span class="grow">{{ stars }} ★</span><strong>{{ count }}</strong></div>
+    {% endfor %}
+    {% for ticket in csat_comments %}
+      <div class="list-row small" style="display:block"><strong>{{ ticket.csat_rating }} ★ · {{ ticket.code }}</strong>
+        <div class="muted">“{{ ticket.csat_comment }}”</div></div>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Latest feedback in MongoDB</h3></div>
+    {% for doc in recent_feedback %}
+      <div class="list-row small" style="display:block">
+        {% if doc.type == 'chat' %}<strong>Chat {% if doc.helpful %}👍{% else %}👎{% endif %}</strong>
+          <div class="muted">{{ doc.question|truncatechars:120 }}</div>
+        {% else %}<strong>Ticket {{ doc.ticket_id }} · {{ doc.rating }} ★</strong>
+          {% if doc.comment %}<div class="muted">“{{ doc.comment }}”</div>{% endif %}{% endif %}
+        <div class="xsmall muted">{{ doc.created_at|date:"j M, H:i" }}</div>
+      </div>
+    {% empty %}
+      <div class="list-row small muted">{% if mongo_ok is None %}Set MONGODB_URI to store feedback in MongoDB.{% else %}No feedback stored yet.{% endif %}</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

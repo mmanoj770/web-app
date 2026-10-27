@@ -96,6 +96,9 @@ def health(request):
 
     config = providers.resolve()
     checks['assistant'] = {'ok': True, 'engine': config.label if config else 'Smart assistant (rule-based)'}
+    paused = {name: reason for name in providers.PROVIDER_LABELS if (reason := providers.paused(name))}
+    if paused:
+        checks['assistant']['paused'] = paused
 
     healthy = checks['database']['ok'] and checks['database'].get('pending_migrations', 0) == 0
     status = 'ok' if healthy and mongo_ok is not False else ('degraded' if healthy else 'down')

@@ -35,6 +35,7 @@ urlpatterns = [
     path('', include('catalog.urls')),
 ]
 
+handler400 = 'myproject.views.bad_request'
 handler403 = 'myproject.views.permission_denied'
 handler404 = 'myproject.views.page_not_found'
 handler500 = 'myproject.views.server_error'

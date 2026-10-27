@@ -264,6 +264,36 @@ def user_update(request, pk):
 
 # --- System status (administrators only) -------------------------------------
 
+@staff_required
+def feedback(request):
+    """Chat thumbs up/down, ticket ratings and questions the assistant couldn't answer."""
+    from assistant.models import ChatMessage
+    from myproject import mongo
+
+    replies = ChatMessage.objects.filter(role=ChatMessage.Role.ASSISTANT)
+    helpful, unhelpful = replies.filter(helpful=True).count(), replies.filter(helpful=False).count()
+    rated = Ticket.objects.exclude(csat_rating=None)
+    unhelpful_replies = []
+    for reply in replies.filter(helpful=False).order_by('-created_at')[:10]:
+        question = ChatMessage.objects.filter(session_key=reply.session_key, role=ChatMessage.Role.USER,
+                                              pk__lt=reply.pk).order_by('-pk').first()
+        unhelpful_replies.append({'question': question.content if question else '', 'reply': reply,
+                                  'when': reply.created_at})
+    mongo_ok, mongo_detail = mongo.ping()
+    return render(request, 'dashboard/feedback.html', {
+        'helpful': helpful, 'unhelpful': unhelpful,
+        'helpful_rate': round(100 * helpful / (helpful + unhelpful)) if helpful + unhelpful else None,
+        'chats': replies.count(),
+        'csat': rated.aggregate(avg=Avg('csat_rating'), count=Count('id')),
+        'csat_breakdown': [(n, rated.filter(csat_rating=n).count()) for n in range(5, 0, -1)],
+        'csat_comments': rated.exclude(csat_comment='').select_related('customer')[:10],
+        'escalations': Ticket.objects.filter(source=Ticket.Source.ASSISTANT).select_related('customer')[:10],
+        'unhelpful_replies': unhelpful_replies,
+        'mongo_ok': mongo_ok, 'mongo_detail': mongo_detail, 'mongo_counts': mongo.counts() if mongo_ok else {},
+        'recent_feedback': mongo.find('feedback', limit=10) if mongo_ok else [],
+    })
+
+
 @admin_required
 @require_POST
 def send_test_email(request):

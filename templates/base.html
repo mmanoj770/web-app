@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   {# Apply a visitor's saved theme before the page paints, so there's no flash of the default colours. #}
-  <script>
+  <script nonce="{{ csp_nonce }}">
     (function () {
       try {
         var saved = localStorage.getItem('mj-theme');
@@ -22,7 +22,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="{% static 'css/store.css' %}?v={{ ASSET_VERSION }}" rel="stylesheet">
   {# Prefetch same-site pages when the pointer hovers a link, so navigation feels instant. #}
-  <script type="speculationrules">
+  <script type="speculationrules" nonce="{{ csp_nonce }}">
     {"prefetch": [{"where": {"and": [{"href_matches": "/*"}, {"not": {"href_matches": "/admin/*"}},
       {"not": {"selector_matches": "[data-no-prefetch]"}}]}, "eagerness": "moderate"}]}
   </script>

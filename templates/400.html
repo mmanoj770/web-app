@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Bad request · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="card empty">
+  <i class="bi bi-exclamation-octagon"></i>
+  <h2>That request didn't look right</h2>
+  <p class="muted">Error <a class="code-pill" href="{% url 'support:error_codes' %}#WEB-400">WEB-400</a>: something in the request was missing or in the wrong format. Go back and try again.</p>
+  <div class="row" style="justify-content:center; flex-wrap: wrap">
+    <a class="btn btn-primary" href="{% url 'catalog:home' %}">Back to the store</a>
+    <button class="btn btn-white" type="button" data-ask="What does error WEB-400 mean?"><i class="bi bi-stars"></i> Ask the assistant</button>
+  </div>
+</div>
+{% endblock %}

@@ -17,11 +17,11 @@ support tickets. Support agents and administrators work from a dashboard.
 | Responsive website, 3+ pages, chat widget on every page | Home, products, product page, bag, checkout, orders, help center, FAQ, error codes, tickets. Works down to phone width. The chat widget (`templates/assistant/widget.html`) is in the base layout, so it is on every page, including the error pages. |
 | 10+ FAQs stored in SQL and shown on the FAQ page | `support.FAQ` table (14 FAQs, editable in Django admin). `/support/faq/` loads them from `GET /api/faqs/`. |
 | 8+ error codes (400, 401, 403, 404, 429, 500, 503 + site-specific) | `support.ErrorCode` table, 16 codes: `WEB-400`, `WEB-401`, `WEB-403`, `WEB-404`, `AI-429`, `WEB-500`, `WEB-503` plus site-specific payment and checkout codes (`PAY-001`..`PAY-005`, `ORD-001`..`ORD-004`). Listed at `/support/error-codes/` and `GET /api/error-codes/`, shown where they happen (payments, checkout, error pages, API errors, chat limit). |
-| Custom 404 and 500 pages with "Ask the assistant" | `templates/404.html`, `templates/500.html` (`myproject/views.py`, with a plain fallback page if even that fails) |
+| Custom 404 and 500 pages with "Ask the assistant" | `templates/404.html`, `templates/500.html` (`myproject/views.py`, with a plain fallback page if even that fails), plus custom 400 and 403 pages |
 | Assistant answers from the FAQs, explains error codes, creates a ticket when it can't answer | `assistant/fallback.py` + `support/lookup.py` (FAQ matching; codes like `PAY-001` or "error 404"); LLMs get `search_faqs` and `explain_error_code` tools. Unanswered questions become a ticket via `support.services.escalate_from_assistant`. |
 | Support tickets in SQL; chat logs and feedback in MongoDB | Tickets: `support.Ticket` (Postgres on the live site), with a CRUD API at `/api/tickets/`. Chats and feedback (👍/👎, ticket ratings): MongoDB collections `chats` and `feedback` via `myproject/mongo.py` (`MONGODB_URI`). |
-| API keys in environment variables, nothing confidential in GitHub | All keys come from environment variables (Vercel) or the git-ignored `.env`; see `.env.example`. |
-| Request logging, health check, third-party API with a time limit and fallback | `myproject/observability.py`: one JSON log line per request with an `X-Request-ID`; `GET /health/`. India Post PIN code API (`orders/delivery.py`): 3-second timeout, cached, falls back to a local estimate. |
+| API keys in environment variables, nothing confidential in GitHub | All keys come from environment variables (Vercel) or the git-ignored `.env`; see `.env.example`. Production refuses to start without `DJANGO_SECRET_KEY`. `manage.py check --deploy` passes: HTTPS redirect, HSTS, secure cookies, and a nonce-based Content Security Policy. |
+| Request logging, health check, third-party API with a time limit and fallback | `myproject/observability.py`: one JSON log line per request with an `X-Request-ID`; `GET /health/`. India Post PIN code API (`orders/delivery.py`): 3-second timeout, cached, falls back to a local estimate. The LLM call also has a timeout and falls back to the rule-based assistant. Dashboard → Feedback shows 👍/👎 rates, unhelpful replies, ticket ratings and unanswered questions. |
 | README with the live link and one proposed improvement | Live link above; improvements at the end of this file. |
 
 ## Quick start
@@ -67,17 +67,19 @@ Connect a real LLM by setting **one** API key before `runserver`; the store pick
 | Google Gemini | `export GEMINI_API_KEY=...` |
 | Groq | `export GROQ_API_KEY=...` |
 | OpenRouter | `export OPENROUTER_API_KEY=...` |
+| Vercel AI Gateway | Nothing on Vercel: it authenticates with the deployment's OIDC token (add a card under Vercel → AI Gateway to unlock the free credits). Elsewhere: `AI_GATEWAY_API_KEY`. Default model `anthropic/claude-haiku-5.5`. |
 | Ollama (free, runs on your Mac) | `ollama pull llama3.2 && ollama serve`, then `export LLM_PROVIDER=ollama` |
 
-Optional settings: `LLM_PROVIDER` (`auto`, `anthropic`, `openai`, `gemini`, `groq`, `openrouter`, `ollama`,
-`none`), `LLM_MODEL` to pick a model (provider model names change often, so set this to a current one),
+Optional settings: `LLM_PROVIDER` (`auto`, `anthropic`, `openai`, `gemini`, `groq`, `openrouter`, `gateway`,
+`ollama`, `none`), `LLM_MODEL` to pick a model (provider model names change often, so set this to a current one),
 `LLM_BASE_URL` for any other OpenAI-compatible server (LM Studio, vLLM) and `ASSISTANT_RATE_LIMIT`
 (messages per minute per IP, default 20).
 
 The assistant uses tool calling to search the catalog, compare specs, look up the customer's orders and
 tickets, and raise a ticket when the customer agrees. It only quotes prices and order details that come from
 the database. If the LLM is unreachable it falls back to the rule-based assistant, and the chat header shows
-which one answered.
+which one answered. A provider that rejects the credentials (401/402/403, e.g. no billing set up) is paused for
+15 minutes so customers get instant answers meanwhile; `/health/` shows the reason.
 
 ## Features
 

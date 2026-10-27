@@ -16,6 +16,7 @@ from pathlib import Path
 from urllib.parse import parse_qsl, unquote, urlsplit
 
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.csp import CSP
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,10 +42,7 @@ _load_env_file(BASE_DIR / '.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Set DJANGO_SECRET_KEY in the environment for any real deployment.
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-dev-only-change-me',
-)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
 # Vercel sets VERCEL=1 in its builds and functions (see "Deploying to Vercel" in README.md).
 ON_VERCEL = bool(os.environ.get('VERCEL'))
@@ -61,7 +59,16 @@ if ON_VERCEL:
     CSRF_TRUSTED_ORIGINS += ['https://*.vercel.app']
     # Vercel terminates HTTPS and forwards plain HTTP with this header.
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 365 * 24 * 60 * 60
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_PRELOAD = True  # *.vercel.app is already preloaded.
     SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = True
+
+if not SECRET_KEY:
+    if ON_VERCEL and os.environ.get('VERCEL_ENV') == 'production':
+        raise ImproperlyConfigured('Set DJANGO_SECRET_KEY in the Vercel environment variables.')
+    # Development and preview deployments: a fixed key is fine locally, never in production.
+    SECRET_KEY = 'django-insecure-dev-only-change-me'
 
 
 # Application definition
@@ -89,6 +96,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 MIDDLEWARE = [
     'myproject.observability.RequestLogMiddleware',
+    'assistant.middleware.VercelOidcMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -97,7 +105,23 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.csp.ContentSecurityPolicyMiddleware',
 ]
+
+# Content Security Policy: only our own scripts (inline ones need the per-request nonce),
+# styles and fonts from our CDNs, no framing. See templates/base.html.
+SECURE_CSP = {
+    'default-src': [CSP.SELF],
+    'script-src': [CSP.SELF, CSP.NONCE],
+    'style-src': [CSP.SELF, CSP.UNSAFE_INLINE, 'https://fonts.googleapis.com', 'https://cdn.jsdelivr.net'],
+    'font-src': [CSP.SELF, 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'],
+    'img-src': [CSP.SELF, 'data:'],
+    'connect-src': [CSP.SELF],
+    'object-src': [CSP.NONE],
+    'base-uri': [CSP.SELF],
+    'form-action': [CSP.SELF],
+    'frame-ancestors': [CSP.NONE],
+}
 
 ROOT_URLCONF = 'myproject.urls'
 
@@ -111,6 +135,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.csp',
                 'cart.context_processors.cart',
                 'catalog.context_processors.store',
             ],
@@ -202,7 +227,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Bumped when CSS/JS change so browsers fetch the new files instead of cached ones.
-ASSET_VERSION = '5.2'
+ASSET_VERSION = '5.3'
 # WhiteNoise serves static files in production straight from the app folders, so no
 # collectstatic step is needed; ASSET_VERSION query strings handle cache busting.
 WHITENOISE_USE_FINDERS = True

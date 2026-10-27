@@ -88,3 +88,38 @@ class EmailAlertTests(TestCase):
     def test_only_admins_can_send_test_email(self):
         self.client.force_login(make_user('agent', role='agent'))
         self.assertEqual(self.client.post(reverse('dashboard:test_email')).status_code, 403)
+
+
+class SecurityAndPagesTests(TestCase):
+    def test_csp_header_and_nonced_inline_scripts(self):
+        response = self.client.get(reverse('catalog:home'))
+        policy = response['Content-Security-Policy']
+        nonce = policy.split("'nonce-")[1].split("'")[0]
+        self.assertIn("frame-ancestors 'none'", policy)
+        self.assertNotIn("script-src 'self' 'unsafe-inline'", policy)
+        self.assertEqual(response.content.decode().count(f'nonce="{nonce}"'), 2)
+
+    def test_400_page(self):
+        from django.test import RequestFactory
+
+        from . import views
+
+        request = RequestFactory().get('/')
+        request.user = mock.Mock(is_authenticated=False)
+        request.session = {}
+        response = views.bad_request(request)
+        self.assertContains(response, 'WEB-400', status_code=400)
+        self.assertContains(response, 'Ask the assistant', status_code=400)
+
+    def test_feedback_dashboard(self):
+        from assistant.models import ChatMessage
+
+        ChatMessage.objects.create(session_key='s', role='user', content='Do you sell drones?')
+        ChatMessage.objects.create(session_key='s', role='assistant', content='Not sure.', helpful=False)
+        ChatMessage.objects.create(session_key='s', role='assistant', content='Yes!', helpful=True)
+        self.client.force_login(make_user('agent', role='agent'))
+        response = self.client.get(reverse('dashboard:feedback'))
+        self.assertContains(response, '50%')
+        self.assertContains(response, 'Do you sell drones?')
+        self.client.force_login(make_user('shopper'))
+        self.assertEqual(self.client.get(reverse('dashboard:feedback')).status_code, 403)

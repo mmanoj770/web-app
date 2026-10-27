@@ -112,6 +112,9 @@ def respond(request, message):
             logger.error('Assistant: LLM unavailable (%s); using the rule-based assistant.', exc)
         except llm.LLMUnavailable as exc:
             logger.error('Assistant: %s; using the rule-based assistant.', exc)
+            if any(f'HTTP {code}' in str(exc) for code in (401, 402, 403)):
+                # Credentials or billing problem: it won't fix itself on the next message.
+                providers.pause(config.name, str(exc))
     if result is None:
         result = fallback.reply(message, request.user)
 

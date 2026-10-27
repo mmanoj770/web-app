@@ -1,18 +1,25 @@
 """Choose which LLM powers the shopping assistant.
 
 LLM_PROVIDER selects it: auto (default), anthropic, openai, gemini, groq,
-openrouter, ollama or none. "auto" uses the first provider with credentials,
-then a local Ollama server if one is running, and the rule-based assistant
-otherwise.
+openrouter, gateway, ollama or none. "auto" uses the first provider with
+credentials, then Vercel AI Gateway (on Vercel it authenticates with the
+deployment's own OIDC token, so no key is needed), then a local Ollama server
+if one is running, and the rule-based assistant otherwise.
+
+A provider that rejects our credentials (e.g. AI Gateway before billing is set
+up) is paused for a while so customers get instant rule-based answers instead
+of waiting on a failing request every time.
 """
 import json
 import logging
 import os
 import time
 import urllib.request
+from contextvars import ContextVar
 from dataclasses import dataclass
 
 from django.conf import settings
+from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +32,7 @@ OPENAI_COMPATIBLE = {
     'gemini': ('https://generativelanguage.googleapis.com/v1beta/openai', 'GEMINI_API_KEY', 'gemini-2.0-flash'),
     'groq': ('https://api.groq.com/openai/v1', 'GROQ_API_KEY', 'llama-3.3-70b-versatile'),
     'openrouter': ('https://openrouter.ai/api/v1', 'OPENROUTER_API_KEY', 'openai/gpt-4o-mini'),
+    'gateway': ('https://ai-gateway.vercel.sh/v1', 'AI_GATEWAY_API_KEY', 'anthropic/claude-haiku-5.5'),
     'ollama': ('http://localhost:11434/v1', '', 'llama3.2'),
 }
 AUTO_ORDER = ['openai', 'gemini', 'groq', 'openrouter']
@@ -33,7 +41,11 @@ OLLAMA_URL = 'http://localhost:11434/v1'
 ANTHROPIC_CREDENTIAL_VARS = ('ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_PROFILE',
                              'ANTHROPIC_FEDERATION_RULE_ID')
 PROVIDER_LABELS = {'anthropic': 'Claude', 'openai': 'OpenAI', 'gemini': 'Gemini', 'groq': 'Groq',
-                   'openrouter': 'OpenRouter', 'ollama': 'Ollama'}
+                   'openrouter': 'OpenRouter', 'gateway': 'Vercel AI Gateway', 'ollama': 'Ollama'}
+
+# The Vercel OIDC token of the current request (set by assistant.middleware on Vercel).
+OIDC_TOKEN = ContextVar('vercel_oidc_token', default='')
+PAUSE_SECONDS = 15 * 60
 
 
 @dataclass(frozen=True)
@@ -56,6 +68,23 @@ def anthropic_has_credentials():
         return True
     config_dir = os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config')
     return os.path.isdir(os.path.join(config_dir, 'anthropic'))
+
+
+def gateway_token():
+    """Credentials for Vercel AI Gateway: an API key, or the deployment's OIDC token."""
+    return (os.environ.get('AI_GATEWAY_API_KEY') or os.environ.get('VERCEL_OIDC_TOKEN')
+            or OIDC_TOKEN.get())
+
+
+def pause(name, reason, seconds=PAUSE_SECONDS):
+    """Stop using a provider for a while (e.g. it rejected our credentials)."""
+    cache.set(f'llm-paused:{name}', reason[:300], seconds)
+    logger.warning('Assistant: pausing %s for %s s: %s', name, seconds, reason[:300])
+
+
+def paused(name):
+    """The reason a provider is paused, or None."""
+    return cache.get(f'llm-paused:{name}')
 
 
 _ollama_cache = {'checked_at': -60.0, 'models': []}
@@ -98,6 +127,9 @@ def resolve():
             name = 'anthropic'
         else:
             name = next((p for p in AUTO_ORDER if os.environ.get(OPENAI_COMPATIBLE[p][1])), None)
+            if name is None and gateway_token() and not paused('gateway'):
+                base_url, _key_var, default_model = OPENAI_COMPATIBLE['gateway']
+                return ProviderConfig('gateway', settings.LLM_MODEL or default_model, gateway_token(), base_url)
             if name is None:
                 models = ollama_models(settings.LLM_BASE_URL or None)
                 if not models:
@@ -116,6 +148,8 @@ def resolve():
         return None
     base_url, key_var, default_model = OPENAI_COMPATIBLE[name]
     api_key = settings.LLM_API_KEY or (os.environ.get(key_var, '') if key_var else '')
+    if name == 'gateway':
+        api_key = api_key or gateway_token()
     if key_var and not api_key:
         logger.warning('LLM_PROVIDER=%s but %s is not set.', name, key_var)
         return None

@@ -1,6 +1,6 @@
 import logging
 
-from django.http import HttpResponseServerError
+from django.http import HttpResponseBadRequest, HttpResponseServerError
 from django.shortcuts import render
 
 logger = logging.getLogger(__name__)
@@ -25,6 +25,13 @@ def server_error(request):
     except Exception:
         logger.exception('Could not render the 500 page')
         return HttpResponseServerError(PLAIN_500)
+
+
+def bad_request(request, exception=None):
+    try:
+        return render(request, '400.html', {'error_code': 'WEB-400'}, status=400)
+    except Exception:  # e.g. a request with an invalid Host header
+        return HttpResponseBadRequest('Bad request (error WEB-400). Please go back and try again.')
 
 
 def permission_denied(request, exception=None):
