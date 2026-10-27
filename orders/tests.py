@@ -1,5 +1,8 @@
+from unittest import mock
+
+from django.conf import settings
 from django.core import mail
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from myproject.testing import SHIPPING, make_product, make_user
@@ -58,6 +61,7 @@ class CheckoutTests(TestCase):
         self.assertContains(response, 'Only 1 of')
         self.assertFalse(Order.objects.exists())
 
+    @override_settings(ORDER_ALERT_EMAILS=[])
     def test_successful_payment_marks_order_paid(self):
         order, _ = self._place_order()
         with self.captureOnCommitCallbacks(execute=True):
@@ -69,7 +73,32 @@ class CheckoutTests(TestCase):
         self.assertEqual(payment.status, Payment.Status.SUCCESS)
         self.assertEqual(payment.card_last4, '4242')
         self.assertEqual(order.events.count(), 2)
+        # Only the confirmation: no alert address is configured.
         self.assertEqual(len(mail.outbox), 1)
+        confirmation = mail.outbox[0]
+        self.assertEqual(confirmation.subject, f'[MJ] Order {order.number} confirmed')
+        self.assertEqual(confirmation.to, [order.user.email])
+        self.assertIn(self.product.name, confirmation.body)
+        self.assertIn(f'{settings.SITE_URL}/orders/{order.pk}/', confirmation.body)
+        self.assertIn('Track your order', confirmation.alternatives[0].content)
+
+    def test_owner_gets_new_order_alert(self):
+        order, _ = self._place_order()
+        with self.settings(ORDER_ALERT_EMAILS=['owner@example.com']):
+            with self.captureOnCommitCallbacks(execute=True):
+                self.client.post(reverse('orders:pay', args=[order.pk]), GOOD_CARD)
+        alert = next(m for m in mail.outbox if m.to == ['owner@example.com'])
+        self.assertTrue(alert.subject.startswith(f'[MJ] New order {order.number} · ₹'))
+        self.assertIn('ending 4242', alert.body)
+        self.assertIn(f'/dashboard/orders/{order.pk}/', alert.body)
+
+    def test_email_failure_does_not_break_payment(self):
+        order, _ = self._place_order()
+        with mock.patch('django.core.mail.EmailMultiAlternatives.send', side_effect=OSError('SMTP down')), \
+                self.assertLogs('orders.emails', 'ERROR'):
+            with self.captureOnCommitCallbacks(execute=True):
+                response = self.client.post(reverse('orders:pay', args=[order.pk]), GOOD_CARD)
+        self.assertRedirects(response, reverse('orders:success', args=[order.pk]))
 
     def test_declined_payment_keeps_order_pending(self):
         order, _ = self._place_order()

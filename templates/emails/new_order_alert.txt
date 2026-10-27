@@ -1,0 +1,13 @@
+{% load store_tags tz %}{% autoescape off %}New paid order on {{ STORE_NAME }}: {{ order.number }}
+
+Customer: {{ order.full_name }} ({{ order.user.email|default:order.user.username }}), {{ order.phone }}
+Ship to: {{ order.address_line }}, {{ order.city }} {{ order.postal_code }}
+
+{% for item in items %}- {{ item.product_name }} × {{ item.quantity }} @ {{ item.unit_price|money }} = {{ item.line_total|money }}
+{% endfor %}
+Total: {{ order.total|money }}
+Payment: {{ payment.get_method_display }}{% if payment.card_last4 %} ending {{ payment.card_last4 }}{% elif payment.upi_id %} · {{ payment.upi_id }}{% endif %} · {{ payment.reference }}
+Placed: {{ order.created_at|timezone:"Asia/Kolkata"|date:"j M Y, g:i A" }} IST
+
+Open in the dashboard to ship it: {{ dashboard_url }}
+{% endautoescape %}

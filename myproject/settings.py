@@ -244,8 +244,38 @@ ASSISTANT_RATE_LIMIT = int(os.environ.get('ASSISTANT_RATE_LIMIT', '20'))
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+# With EMAIL_HOST_USER and EMAIL_HOST_PASSWORD set (for Gmail: your address and an App Password),
+# emails are sent over SMTP. Otherwise they are printed to the server console.
+_smtp_user = os.environ.get('EMAIL_HOST_USER', '')
+_smtp_password = os.environ.get('EMAIL_HOST_PASSWORD', '').replace(' ', '')  # Google shows it in groups of 4.
+if _smtp_user and _smtp_password:
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+            'OPTIONS': {
+                'host': os.environ.get('EMAIL_HOST', 'smtp.gmail.com'),
+                'port': int(os.environ.get('EMAIL_PORT', '587')),
+                'username': _smtp_user,
+                'password': _smtp_password,
+                'use_tls': True,
+                'timeout': 15,
+            },
+        },
+    }
+    # Gmail only sends as the signed-in account.
+    DEFAULT_FROM_EMAIL = f'{STORE_NAME} <{_smtp_user}>'
+else:
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+        },
+    }
+
+# Who gets a "New order" email when a customer pays (comma separated).
+ORDER_ALERT_EMAILS = [e.strip() for e in os.environ.get('ORDER_ALERT_EMAILS', '').split(',') if e.strip()]
+
+# Public address of the site, for links in emails. Vercel provides its production domain.
+_vercel_domain = os.environ.get('VERCEL_PROJECT_PRODUCTION_URL', '')
+SITE_URL = os.environ.get(
+    'SITE_URL', f'https://{_vercel_domain}' if _vercel_domain else 'http://127.0.0.1:8000',
+).rstrip('/')

@@ -1,0 +1,14 @@
+{% extends "emails/_layout.html" %}
+{% load store_tags tz %}
+{% block kicker %}New order{% endblock %}
+{% block body %}
+<h1 style="margin:0 0 8px;font-size:22px;">{{ order.number }} · {{ order.total|money }}</h1>
+<p style="margin:0;font-size:14px;line-height:1.6;">
+  <strong>{{ order.full_name }}</strong> ({{ order.user.email|default:order.user.username }}) · {{ order.phone }}<br>
+  {{ order.address_line }}, {{ order.city }} {{ order.postal_code }}<br>
+  <span style="color:#777;">Placed {{ order.created_at|timezone:"Asia/Kolkata"|date:"j M Y, g:i A" }} IST</span>
+</p>
+{% include "emails/_items.html" %}
+<p style="margin:24px 0 8px;"><a href="{{ dashboard_url }}" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:12px 22px;">Open in dashboard</a></p>
+{% endblock %}
+{% block footer %}You get this because your address is in ORDER_ALERT_EMAILS for {{ STORE_NAME }}.{% endblock %}

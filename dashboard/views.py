@@ -313,11 +313,13 @@ def system_status(request):
 
     # Email.
     backend = mailers.default.__class__.__module__.rsplit('.', 1)[-1]
+    alerts = ', '.join(settings.ORDER_ALERT_EMAILS) or 'nobody (set ORDER_ALERT_EMAILS)'
     if backend in ('console', 'locmem', 'dummy'):
-        add('Email', True, 'Printed to the server console', 'Configure an SMTP backend in MAILERS to send real '
-            'emails.', 'development')
+        add('Email', True, 'Printed to the server console', 'Set EMAIL_HOST_USER and EMAIL_HOST_PASSWORD to send '
+            f'real emails. New-order alerts: {alerts}.', 'development')
     else:
-        add('Email', True, f'{backend.upper()} backend', 'Order and ticket emails are sent to customers.')
+        add('Email', True, f'{backend.upper()} backend', 'Order and ticket emails are sent to customers. '
+            f'New-order alerts: {alerts}.')
 
     # Payments.
     add('Payments', True, 'Simulated gateway (UPI and cards)',

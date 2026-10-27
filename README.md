@@ -145,6 +145,17 @@ accounts and are only there to fill the store for development.
 python manage.py test
 ```
 
+## Order emails
+
+When a payment succeeds, the customer gets an order confirmation (items, total, address, delivery date and
+a tracking link) and everyone in `ORDER_ALERT_EMAILS` gets a "New order" email with a link to the dashboard.
+Customers also get an email whenever the order status changes, and ticket updates are emailed too.
+
+Emails are printed to the server console until you set `EMAIL_HOST_USER` and `EMAIL_HOST_PASSWORD`. For
+Gmail, turn on 2-Step Verification, create an App Password (Google Account → Security → App passwords) and
+put your address and that password in `.env` (locally) and in Vercel's environment variables. Never commit
+the password. Dashboard → System shows whether real email is on and who receives new-order alerts.
+
 ## Deploying to Vercel
 
 Import the GitHub repo in Vercel; it detects Django automatically. On Vercel (`VERCEL=1`) the app turns debug

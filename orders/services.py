@@ -7,7 +7,7 @@ from django.db.models import F
 
 from catalog.models import Product
 
-from . import payments
+from . import emails, payments
 from .models import Order, OrderEvent, OrderItem, Payment
 
 
@@ -75,12 +75,19 @@ def pay_order(order, card_number='', method=Payment.Method.CARD, upi_id=''):
         failure_reason=result.failure_reason,
     )
     if result.success:
-        update_status(order, Order.Status.PAID, f'Payment received ({payment.reference}).')
+        # The confirmation email replaces the generic "now: Paid" status email.
+        update_status(order, Order.Status.PAID, f'Payment received ({payment.reference}).', notify=False)
+        transaction.on_commit(lambda: _notify_paid(order, payment))
     return payment
 
 
+def _notify_paid(order, payment):
+    emails.send_order_confirmation(order, payment)
+    emails.send_new_order_alert(order, payment)
+
+
 @transaction.atomic
-def update_status(order, status, note='', carrier='', tracking_number=''):
+def update_status(order, status, note='', carrier='', tracking_number='', notify=True):
     if status == Order.Status.CANCELLED and order.status != Order.Status.CANCELLED:
         _restock(order)
     order.status = status
@@ -90,7 +97,8 @@ def update_status(order, status, note='', carrier='', tracking_number=''):
         order.tracking_number = tracking_number
     order.save()
     OrderEvent.objects.create(order=order, status=status, note=note)
-    transaction.on_commit(lambda: _notify_status(order, note))
+    if notify:
+        transaction.on_commit(lambda: _notify_status(order, note))
     return order
 
 
