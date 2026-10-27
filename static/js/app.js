@@ -531,6 +531,20 @@
     if (input.value) check();
   });
 
+  /* ---------- Show / hide password ---------- */
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-password-toggle]');
+    if (!btn) return;
+    const input = document.getElementById(btn.getAttribute('aria-controls'));
+    if (!input) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.setAttribute('aria-pressed', String(show));
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    btn.innerHTML = `<i class="bi bi-eye${show ? '-slash' : ''}"></i>`;
+    input.focus({ preventScroll: true });
+  });
+
   /* ---------- FAQs from /api/faqs/ ---------- */
   $$('[data-faq-api]').forEach((root) => {
     const results = $('[data-faq-results]', root);

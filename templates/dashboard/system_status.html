@@ -13,6 +13,12 @@
         <strong>{{ check.name }}</strong> · {{ check.summary }}
         {% if check.detail %}<div class="small muted">{{ check.detail }}</div>{% endif %}
       </div>
+      {% if check.name == 'Email' %}
+        <form method="post" action="{% url 'dashboard:test_email' %}">
+          {% csrf_token %}
+          <button class="btn btn-outline btn-sm" type="submit"><i class="bi bi-envelope"></i> Send test email</button>
+        </form>
+      {% endif %}
     </div>
   {% endfor %}
 </div>

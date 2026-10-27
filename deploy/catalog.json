@@ -1,0 +1,1758 @@
+[
+ {
+  "model": "catalog.category",
+  "pk": 1,
+  "fields": {
+   "name": "Smartphones",
+   "slug": "smartphones",
+   "description": "",
+   "tagline": "Flagship cameras. All-day batteries.",
+   "icon": "phone",
+   "position": 0
+  }
+ },
+ {
+  "model": "catalog.category",
+  "pk": 2,
+  "fields": {
+   "name": "Laptops",
+   "slug": "laptops",
+   "description": "",
+   "tagline": "Power for work, study and play.",
+   "icon": "laptop",
+   "position": 1
+  }
+ },
+ {
+  "model": "catalog.category",
+  "pk": 3,
+  "fields": {
+   "name": "Headphones",
+   "slug": "headphones",
+   "description": "",
+   "tagline": "Sound that moves you.",
+   "icon": "headphones",
+   "position": 2
+  }
+ },
+ {
+  "model": "catalog.category",
+  "pk": 4,
+  "fields": {
+   "name": "Smartwatches",
+   "slug": "smartwatches",
+   "description": "",
+   "tagline": "Your health, on your wrist.",
+   "icon": "smartwatch",
+   "position": 3
+  }
+ },
+ {
+  "model": "catalog.category",
+  "pk": 5,
+  "fields": {
+   "name": "Tablets",
+   "slug": "tablets",
+   "description": "",
+   "tagline": "Create, stream and learn anywhere.",
+   "icon": "tablet",
+   "position": 4
+  }
+ },
+ {
+  "model": "catalog.category",
+  "pk": 6,
+  "fields": {
+   "name": "Accessories",
+   "slug": "accessories",
+   "description": "",
+   "tagline": "Small things that make a big difference.",
+   "icon": "mouse",
+   "position": 5
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 1,
+  "fields": {
+   "category": 1,
+   "name": "Samsung Galaxy S24 Ultra (12 GB / 256 GB)",
+   "slug": "samsung-galaxy-s24-ultra-12-gb-256-gb",
+   "brand": "Samsung",
+   "description": "Samsung's most powerful Galaxy with a built-in S Pen, a 200 MP camera and Galaxy AI features.",
+   "price": "109999.00",
+   "mrp": "134999.00",
+   "stock": 12,
+   "highlights": [
+    "200 MP camera with 5x optical zoom",
+    "Built-in S Pen",
+    "Snapdragon 8 Gen 3 for Galaxy",
+    "Titanium frame"
+   ],
+   "specs": {
+    "Display": "6.8\" QHD+ Dynamic AMOLED 2X, 120 Hz",
+    "Processor": "Snapdragon 8 Gen 3",
+    "RAM": "12 GB",
+    "Storage": "256 GB",
+    "Main camera": "200 MP + 50 MP 5x telephoto",
+    "Battery": "5000 mAh, 45 W"
+   },
+   "is_active": true,
+   "is_featured": true,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.619Z",
+   "updated_at": "2026-10-27T04:58:58.619Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 2,
+  "fields": {
+   "category": 1,
+   "name": "Apple iPhone 15 (128 GB)",
+   "slug": "apple-iphone-15-128-gb",
+   "brand": "Apple",
+   "description": "Dynamic Island, a 48 MP main camera and USB-C, in a colour-infused glass design.",
+   "price": "69900.00",
+   "mrp": "79900.00",
+   "stock": 10,
+   "highlights": [
+    "Dynamic Island",
+    "48 MP main camera with 2x telephoto",
+    "USB-C",
+    "A16 Bionic chip"
+   ],
+   "specs": {
+    "Display": "6.1\" Super Retina XDR OLED",
+    "Processor": "A16 Bionic",
+    "Storage": "128 GB",
+    "Main camera": "48 MP",
+    "Battery": "Up to 20 hours video playback"
+   },
+   "is_active": true,
+   "is_featured": true,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.620Z",
+   "updated_at": "2026-10-27T04:58:58.620Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 3,
+  "fields": {
+   "category": 1,
+   "name": "Google Pixel 8a (8 GB / 128 GB)",
+   "slug": "google-pixel-8a-8-gb-128-gb",
+   "brand": "Google",
+   "description": "Google AI in a compact phone, with a brilliant camera and seven years of OS updates.",
+   "price": "39999.00",
+   "mrp": "52999.00",
+   "stock": 9,
+   "highlights": [
+    "Google Tensor G3",
+    "7 years of OS and security updates",
+    "120 Hz Actua display",
+    "Magic Eraser and Best Take"
+   ],
+   "specs": {
+    "Display": "6.1\" OLED, 120 Hz",
+    "Processor": "Google Tensor G3",
+    "RAM": "8 GB",
+    "Storage": "128 GB",
+    "Main camera": "64 MP",
+    "Battery": "4492 mAh"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.621Z",
+   "updated_at": "2026-10-27T04:58:58.621Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 4,
+  "fields": {
+   "category": 1,
+   "name": "Google Pixel 8 (Rose, 128 GB)",
+   "slug": "google-pixel-8-rose-128-gb",
+   "brand": "Google",
+   "description": "The helpful Pixel with an upgraded camera, a bright display and Google AI built in.",
+   "price": "52999.00",
+   "mrp": "75999.00",
+   "stock": 6,
+   "highlights": [
+    "Google Tensor G3",
+    "Pro-level 50 MP camera",
+    "7 years of updates",
+    "Face and fingerprint unlock"
+   ],
+   "specs": {
+    "Display": "6.2\" Actua OLED, 120 Hz",
+    "Processor": "Google Tensor G3",
+    "RAM": "8 GB",
+    "Storage": "128 GB",
+    "Main camera": "50 MP + 12 MP ultrawide",
+    "Battery": "4575 mAh"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.622Z",
+   "updated_at": "2026-10-27T04:58:58.622Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 5,
+  "fields": {
+   "category": 1,
+   "name": "OnePlus Nord 5 (12 GB / 256 GB)",
+   "slug": "oneplus-nord-5-12-gb-256-gb",
+   "brand": "OnePlus",
+   "description": "Flagship-grade speed and a huge battery that charges from 1% to 100% in about an hour.",
+   "price": "31999.00",
+   "mrp": "34999.00",
+   "stock": 20,
+   "highlights": [
+    "Snapdragon 8s Gen 3",
+    "6800 mAh battery, 80 W SUPERVOOC",
+    "144 Hz AMOLED display",
+    "50 MP Sony main camera"
+   ],
+   "specs": {
+    "Display": "6.83\" AMOLED, 144 Hz",
+    "Processor": "Snapdragon 8s Gen 3",
+    "RAM": "12 GB",
+    "Storage": "256 GB",
+    "Main camera": "50 MP",
+    "Battery": "6800 mAh, 80 W charging"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.623Z",
+   "updated_at": "2026-10-27T04:58:58.623Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 6,
+  "fields": {
+   "category": 1,
+   "name": "Xiaomi Redmi Note 14 Pro+ 5G (8 GB / 256 GB)",
+   "slug": "xiaomi-redmi-note-14-pro-5g-8-gb-256-gb",
+   "brand": "Xiaomi",
+   "description": "A 200 MP camera, a curved AMOLED display and 90 W HyperCharge at a mid-range price.",
+   "price": "29999.00",
+   "mrp": "34999.00",
+   "stock": 25,
+   "highlights": [
+    "200 MP main camera",
+    "6200 mAh battery, 90 W charging",
+    "IP68 dust and water resistance",
+    "Curved AMOLED display"
+   ],
+   "specs": {
+    "Display": "6.67\" curved AMOLED, 120 Hz",
+    "Processor": "Snapdragon 7s Gen 3",
+    "RAM": "8 GB",
+    "Storage": "256 GB",
+    "Main camera": "200 MP",
+    "Battery": "6200 mAh, 90 W charging"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.623Z",
+   "updated_at": "2026-10-27T04:58:58.623Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 7,
+  "fields": {
+   "category": 2,
+   "name": "Apple MacBook Air 13\" (M2, 16 GB / 256 GB)",
+   "slug": "apple-macbook-air-13-m2-16-gb-256-gb",
+   "brand": "Apple",
+   "description": "Strikingly thin and fanless, with the M2 chip and up to 18 hours of battery life.",
+   "price": "99900.00",
+   "mrp": "114900.00",
+   "stock": 5,
+   "highlights": [
+    "Apple M2 chip",
+    "Up to 18 hours battery",
+    "13.6\" Liquid Retina display",
+    "MagSafe charging"
+   ],
+   "specs": {
+    "Processor": "Apple M2 (8-core CPU, 8-core GPU)",
+    "RAM": "16 GB unified memory",
+    "Storage": "256 GB SSD",
+    "Display": "13.6\" Liquid Retina",
+    "Battery": "Up to 18 hours",
+    "Weight": "1.24 kg"
+   },
+   "is_active": true,
+   "is_featured": true,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.624Z",
+   "updated_at": "2026-10-27T04:58:58.624Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 8,
+  "fields": {
+   "category": 2,
+   "name": "Lenovo IdeaPad Flex 5 14\" (Ryzen 5)",
+   "slug": "lenovo-ideapad-flex-5-14-ryzen-5",
+   "brand": "Lenovo",
+   "description": "A 2-in-1 convertible that flips from laptop to tablet, ideal for students and work from home.",
+   "price": "54990.00",
+   "mrp": "74890.00",
+   "stock": 14,
+   "highlights": [
+    "360° convertible touchscreen",
+    "16 GB RAM · 512 GB SSD",
+    "Backlit keyboard",
+    "Up to 10 hours battery"
+   ],
+   "specs": {
+    "Processor": "AMD Ryzen 5 7530U",
+    "RAM": "16 GB",
+    "Storage": "512 GB SSD",
+    "Display": "14\" WUXGA touch",
+    "Battery": "Up to 10 hours",
+    "Weight": "1.55 kg"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.625Z",
+   "updated_at": "2026-10-27T04:58:58.625Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 9,
+  "fields": {
+   "category": 2,
+   "name": "HP Pavilion 14 (Core i5)",
+   "slug": "hp-pavilion-14-core-i5",
+   "brand": "HP",
+   "description": "A compact everyday laptop with a backlit keyboard and fast charging.",
+   "price": "61990.00",
+   "mrp": "75000.00",
+   "stock": 9,
+   "highlights": [
+    "Intel Core i5 13th gen",
+    "16 GB RAM · 512 GB SSD",
+    "Fast charge: 50% in 45 minutes",
+    "Backlit keyboard"
+   ],
+   "specs": {
+    "Processor": "Intel Core i5-1335U",
+    "RAM": "16 GB",
+    "Storage": "512 GB SSD",
+    "Display": "14\" FHD IPS",
+    "Battery": "Up to 8 hours",
+    "Weight": "1.41 kg"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.625Z",
+   "updated_at": "2026-10-27T04:58:58.625Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 10,
+  "fields": {
+   "category": 2,
+   "name": "ASUS TUF Gaming F15 (RTX 4050)",
+   "slug": "asus-tuf-gaming-f15-rtx-4050",
+   "brand": "ASUS",
+   "description": "A military-grade gaming laptop with a 144 Hz display and dedicated NVIDIA graphics.",
+   "price": "78990.00",
+   "mrp": "104990.00",
+   "stock": 6,
+   "highlights": [
+    "NVIDIA GeForce RTX 4050",
+    "144 Hz FHD display",
+    "MIL-STD-810H durability",
+    "RGB backlit keyboard"
+   ],
+   "specs": {
+    "Processor": "Intel Core i5-12500H",
+    "RAM": "16 GB",
+    "Storage": "512 GB SSD",
+    "Graphics": "RTX 4050 6 GB",
+    "Display": "15.6\" FHD, 144 Hz",
+    "Weight": "2.2 kg"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.626Z",
+   "updated_at": "2026-10-27T04:58:58.626Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 11,
+  "fields": {
+   "category": 2,
+   "name": "Dell XPS 13 (Core Ultra 7)",
+   "slug": "dell-xps-13-core-ultra-7",
+   "brand": "Dell",
+   "description": "A precision-machined ultraportable with an edge-to-edge InfinityEdge display.",
+   "price": "124990.00",
+   "mrp": "149990.00",
+   "stock": 4,
+   "highlights": [
+    "Intel Core Ultra 7",
+    "InfinityEdge display",
+    "Machined aluminium chassis",
+    "Just 1.19 kg"
+   ],
+   "specs": {
+    "Processor": "Intel Core Ultra 7 155H",
+    "RAM": "16 GB LPDDR5x",
+    "Storage": "512 GB SSD",
+    "Display": "13.4\" FHD+",
+    "Battery": "Up to 12 hours",
+    "Weight": "1.19 kg"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.627Z",
+   "updated_at": "2026-10-27T04:58:58.627Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 12,
+  "fields": {
+   "category": 3,
+   "name": "Apple AirPods Pro (2nd generation, USB-C)",
+   "slug": "apple-airpods-pro-2nd-generation-usb-c",
+   "brand": "Apple",
+   "description": "Up to 2x more Active Noise Cancellation, Adaptive Audio and Personalised Spatial Audio.",
+   "price": "22900.00",
+   "mrp": "24900.00",
+   "stock": 15,
+   "highlights": [
+    "Active Noise Cancellation",
+    "Adaptive Audio and Transparency mode",
+    "Up to 6 hours listening (30 with case)",
+    "IP54 dust, sweat and water resistant"
+   ],
+   "specs": {
+    "Type": "In-ear, wireless",
+    "Noise cancelling": "Yes, adaptive",
+    "Battery": "6 hours (30 with case)",
+    "Charging": "USB-C, MagSafe",
+    "Water resistance": "IP54"
+   },
+   "is_active": true,
+   "is_featured": true,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.628Z",
+   "updated_at": "2026-10-27T04:58:58.628Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 13,
+  "fields": {
+   "category": 3,
+   "name": "Bose QuietComfort Ultra Earbuds",
+   "slug": "bose-quietcomfort-ultra-earbuds",
+   "brand": "Bose",
+   "description": "World-class noise cancellation with immersive spatial audio in a secure, comfortable fit.",
+   "price": "25900.00",
+   "mrp": "29900.00",
+   "stock": 4,
+   "highlights": [
+    "World-class noise cancelling",
+    "Immersive Audio",
+    "CustomTune sound calibration",
+    "IPX4 water resistant"
+   ],
+   "specs": {
+    "Type": "In-ear, wireless",
+    "Noise cancelling": "Yes",
+    "Battery": "6 hours (24 with case)",
+    "Water resistance": "IPX4"
+   },
+   "is_active": true,
+   "is_featured": true,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.628Z",
+   "updated_at": "2026-10-27T04:58:58.628Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 14,
+  "fields": {
+   "category": 3,
+   "name": "Sony WH-1000XM3 Wireless Noise Cancelling",
+   "slug": "sony-wh-1000xm3-wireless-noise-cancelling",
+   "brand": "Sony",
+   "description": "Industry-leading noise cancellation with 30-hour battery life and touch controls.",
+   "price": "19990.00",
+   "mrp": "29990.00",
+   "stock": 8,
+   "highlights": [
+    "Industry-leading noise cancelling",
+    "30 hours battery",
+    "Quick charge: 5 hours in 10 minutes",
+    "Touch controls"
+   ],
+   "specs": {
+    "Type": "Over-ear, wireless",
+    "Noise cancelling": "Yes",
+    "Battery": "30 hours",
+    "Weight": "255 g"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.629Z",
+   "updated_at": "2026-10-27T04:58:58.629Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 15,
+  "fields": {
+   "category": 3,
+   "name": "Apple AirPods Max",
+   "slug": "apple-airpods-max",
+   "brand": "Apple",
+   "description": "High-fidelity over-ear headphones with computational audio and a knit-mesh canopy.",
+   "price": "54900.00",
+   "mrp": "59900.00",
+   "stock": 3,
+   "highlights": [
+    "High-fidelity audio",
+    "Active Noise Cancellation",
+    "Spatial audio with head tracking",
+    "20 hours battery"
+   ],
+   "specs": {
+    "Type": "Over-ear, wireless",
+    "Noise cancelling": "Yes",
+    "Battery": "20 hours",
+    "Weight": "385 g"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.630Z",
+   "updated_at": "2026-10-27T04:58:58.630Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 16,
+  "fields": {
+   "category": 3,
+   "name": "Samsung Galaxy Buds2 Pro",
+   "slug": "samsung-galaxy-buds2-pro",
+   "brand": "Samsung",
+   "description": "Hi-Fi 24-bit audio and intelligent ANC in an ergonomic, compact design.",
+   "price": "9999.00",
+   "mrp": "17999.00",
+   "stock": 18,
+   "highlights": [
+    "24-bit Hi-Fi audio",
+    "Intelligent ANC",
+    "360 Audio",
+    "IPX7 water resistant"
+   ],
+   "specs": {
+    "Type": "In-ear, wireless",
+    "Noise cancelling": "Yes",
+    "Battery": "5 hours (18 with case)",
+    "Water resistance": "IPX7"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.630Z",
+   "updated_at": "2026-10-27T04:58:58.630Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 17,
+  "fields": {
+   "category": 3,
+   "name": "JBL Live 650BTNC",
+   "slug": "jbl-live-650btnc",
+   "brand": "JBL",
+   "description": "Affordable over-ear headphones with active noise cancelling and JBL Signature Sound.",
+   "price": "7999.00",
+   "mrp": "13999.00",
+   "stock": 22,
+   "highlights": [
+    "Active noise cancelling",
+    "JBL Signature Sound",
+    "20 hours with ANC",
+    "Voice assistant built in"
+   ],
+   "specs": {
+    "Type": "Over-ear, wireless",
+    "Noise cancelling": "Yes",
+    "Battery": "20 hours (ANC on)",
+    "Weight": "260 g"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.631Z",
+   "updated_at": "2026-10-27T04:58:58.631Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 18,
+  "fields": {
+   "category": 3,
+   "name": "JBL Endurance Peak 3",
+   "slug": "jbl-endurance-peak-3",
+   "brand": "JBL",
+   "description": "Sport earbuds with secure ear hooks, IP68 protection and up to 50 hours of play.",
+   "price": "4999.00",
+   "mrp": "7999.00",
+   "stock": 30,
+   "highlights": [
+    "IP68 dust and waterproof",
+    "Up to 50 hours playtime",
+    "Secure Powerhook design",
+    "Ambient Aware"
+   ],
+   "specs": {
+    "Type": "In-ear sport, wireless",
+    "Noise cancelling": "No",
+    "Battery": "10 hours (50 with case)",
+    "Water resistance": "IP68"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.631Z",
+   "updated_at": "2026-10-27T04:58:58.631Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 19,
+  "fields": {
+   "category": 3,
+   "name": "Sennheiser HD 25 Studio Headphones",
+   "slug": "sennheiser-hd-25-studio-headphones",
+   "brand": "Sennheiser",
+   "description": "The legendary closed-back headphones trusted by DJs and broadcasters for decades.",
+   "price": "12990.00",
+   "mrp": "14990.00",
+   "stock": 0,
+   "highlights": [
+    "Closed-back, high isolation",
+    "Rotatable ear cup",
+    "Split headband",
+    "Replaceable parts"
+   ],
+   "specs": {
+    "Type": "On-ear, wired",
+    "Noise cancelling": "Passive isolation",
+    "Impedance": "70 Ω",
+    "Weight": "140 g"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.632Z",
+   "updated_at": "2026-10-27T04:58:58.632Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 20,
+  "fields": {
+   "category": 4,
+   "name": "Apple Watch SE (2nd gen, GPS, 40 mm)",
+   "slug": "apple-watch-se-2nd-gen-gps-40-mm",
+   "brand": "Apple",
+   "description": "All the essentials to stay active, connected and safe, with Crash Detection.",
+   "price": "24900.00",
+   "mrp": "29900.00",
+   "stock": 6,
+   "highlights": [
+    "Heart rate and sleep tracking",
+    "Crash and fall detection",
+    "Swimproof (50 m)",
+    "Works with iPhone"
+   ],
+   "specs": {
+    "Display": "40 mm Retina OLED",
+    "Battery": "Up to 18 hours",
+    "Water resistance": "50 m",
+    "GPS": "Yes"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.633Z",
+   "updated_at": "2026-10-27T04:58:58.633Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 21,
+  "fields": {
+   "category": 4,
+   "name": "Samsung Galaxy Watch6 (40 mm)",
+   "slug": "samsung-galaxy-watch6-40-mm",
+   "brand": "Samsung",
+   "description": "A larger, brighter display with personalised sleep coaching and body composition insights.",
+   "price": "18999.00",
+   "mrp": "29999.00",
+   "stock": 9,
+   "highlights": [
+    "Sleep coaching",
+    "Body composition (BIA) sensor",
+    "Sapphire crystal glass",
+    "Wear OS with Google apps"
+   ],
+   "specs": {
+    "Display": "1.3\" Super AMOLED",
+    "Battery": "Up to 40 hours",
+    "Water resistance": "5 ATM + IP68",
+    "GPS": "Yes"
+   },
+   "is_active": true,
+   "is_featured": true,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.634Z",
+   "updated_at": "2026-10-27T04:58:58.634Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 22,
+  "fields": {
+   "category": 4,
+   "name": "Samsung Galaxy Watch6 Classic (43 mm)",
+   "slug": "samsung-galaxy-watch6-classic-43-mm",
+   "brand": "Samsung",
+   "description": "The iconic rotating bezel returns, in a classic stainless-steel design.",
+   "price": "26999.00",
+   "mrp": "36999.00",
+   "stock": 5,
+   "highlights": [
+    "Rotating bezel",
+    "Stainless steel case",
+    "ECG and blood pressure",
+    "Wear OS with Google apps"
+   ],
+   "specs": {
+    "Display": "1.3\" Super AMOLED",
+    "Battery": "Up to 40 hours",
+    "Water resistance": "5 ATM + IP68",
+    "GPS": "Yes"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.634Z",
+   "updated_at": "2026-10-27T04:58:58.634Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 23,
+  "fields": {
+   "category": 4,
+   "name": "Huawei Watch Fit 2",
+   "slug": "huawei-watch-fit-2",
+   "brand": "Huawei",
+   "description": "A slim smart band-style watch with a large AMOLED screen and up to 10 days of battery.",
+   "price": "12999.00",
+   "mrp": "18999.00",
+   "stock": 11,
+   "highlights": [
+    "1.74\" AMOLED display",
+    "Up to 10 days battery",
+    "97 workout modes",
+    "Bluetooth calling"
+   ],
+   "specs": {
+    "Display": "1.74\" AMOLED",
+    "Battery": "Up to 10 days",
+    "Water resistance": "5 ATM",
+    "GPS": "Built-in"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.635Z",
+   "updated_at": "2026-10-27T04:58:58.635Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 24,
+  "fields": {
+   "category": 5,
+   "name": "Apple iPad (10th generation, Wi-Fi, 64 GB)",
+   "slug": "apple-ipad-10th-generation-wi-fi-64-gb",
+   "brand": "Apple",
+   "description": "The colourful, all-screen iPad for study, streaming and notes. Keyboard sold separately.",
+   "price": "32900.00",
+   "mrp": "34900.00",
+   "stock": 7,
+   "highlights": [
+    "10.9\" Liquid Retina display",
+    "A14 Bionic chip",
+    "Landscape 12 MP front camera",
+    "USB-C"
+   ],
+   "specs": {
+    "Display": "10.9\" Liquid Retina",
+    "Processor": "A14 Bionic",
+    "Storage": "64 GB",
+    "Pencil support": "Apple Pencil (USB-C)",
+    "Battery": "Up to 10 hours"
+   },
+   "is_active": true,
+   "is_featured": true,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.636Z",
+   "updated_at": "2026-10-27T04:58:58.636Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 25,
+  "fields": {
+   "category": 5,
+   "name": "Samsung Galaxy Tab S9 (Wi-Fi, 128 GB)",
+   "slug": "samsung-galaxy-tab-s9-wi-fi-128-gb",
+   "brand": "Samsung",
+   "description": "A premium Dynamic AMOLED tablet with IP68 water resistance and the S Pen included.",
+   "price": "64999.00",
+   "mrp": "72999.00",
+   "stock": 4,
+   "highlights": [
+    "11\" Dynamic AMOLED 2X",
+    "S Pen included",
+    "IP68 water resistance",
+    "Snapdragon 8 Gen 2"
+   ],
+   "specs": {
+    "Display": "11\" Dynamic AMOLED 2X, 120 Hz",
+    "Processor": "Snapdragon 8 Gen 2",
+    "Storage": "128 GB",
+    "Pencil support": "S Pen included",
+    "Battery": "8400 mAh"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.636Z",
+   "updated_at": "2026-10-27T04:58:58.636Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 26,
+  "fields": {
+   "category": 5,
+   "name": "Lenovo Tab M10 FHD Plus",
+   "slug": "lenovo-tab-m10-fhd-plus",
+   "brand": "Lenovo",
+   "description": "An affordable family tablet for video calls, streaming and online classes.",
+   "price": "13999.00",
+   "mrp": "22000.00",
+   "stock": 15,
+   "highlights": [
+    "10.6\" 2K display",
+    "Quad speakers with Dolby Atmos",
+    "Kids mode",
+    "Up to 10 hours video"
+   ],
+   "specs": {
+    "Display": "10.6\" 2K IPS",
+    "Processor": "MediaTek Helio G80",
+    "Storage": "64 GB",
+    "Pencil support": "Lenovo Tab Pen",
+    "Battery": "7700 mAh"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.637Z",
+   "updated_at": "2026-10-27T04:58:58.637Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 27,
+  "fields": {
+   "category": 6,
+   "name": "Logitech MX Master 3S Wireless Mouse",
+   "slug": "logitech-mx-master-3s-wireless-mouse",
+   "brand": "Logitech",
+   "description": "An iconic performance mouse with quiet clicks and an 8K DPI sensor that tracks on glass.",
+   "price": "8995.00",
+   "mrp": "10995.00",
+   "stock": 14,
+   "highlights": [
+    "Quiet clicks",
+    "8000 DPI, tracks on glass",
+    "MagSpeed electromagnetic scrolling",
+    "Up to 70 days per charge"
+   ],
+   "specs": {
+    "Connectivity": "Bluetooth / Logi Bolt receiver",
+    "Battery": "Up to 70 days",
+    "DPI": "8000"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.638Z",
+   "updated_at": "2026-10-27T04:58:58.638Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 28,
+  "fields": {
+   "category": 6,
+   "name": "SanDisk Extreme Portable SSD 1 TB",
+   "slug": "sandisk-extreme-portable-ssd-1-tb",
+   "brand": "SanDisk",
+   "description": "A rugged pocket-sized SSD with up to 1050 MB/s reads, drop and water protection.",
+   "price": "7999.00",
+   "mrp": "15999.00",
+   "stock": 3,
+   "highlights": [
+    "Up to 1050 MB/s read speed",
+    "3 m drop protection",
+    "IP65 water and dust resistance",
+    "USB-C"
+   ],
+   "specs": {
+    "Capacity": "1 TB",
+    "Speed": "Up to 1050 MB/s",
+    "Interface": "USB-C 3.2 Gen 2"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.638Z",
+   "updated_at": "2026-10-27T04:58:58.638Z"
+  }
+ },
+ {
+  "model": "catalog.product",
+  "pk": 29,
+  "fields": {
+   "category": 6,
+   "name": "Anker PowerPort 40 W 5-Port USB Charger",
+   "slug": "anker-powerport-40-w-5-port-usb-charger",
+   "brand": "Anker",
+   "description": "Charge five devices at once from a single compact desktop charger.",
+   "price": "2299.00",
+   "mrp": "2999.00",
+   "stock": 35,
+   "highlights": [
+    "5 USB ports",
+    "40 W total output",
+    "PowerIQ fast charging",
+    "MultiProtect safety system"
+   ],
+   "specs": {
+    "Output": "40 W",
+    "Ports": "5x USB-A"
+   },
+   "is_active": true,
+   "is_featured": false,
+   "rating_avg": "0.0",
+   "rating_count": 0,
+   "created_at": "2026-10-27T04:58:58.639Z",
+   "updated_at": "2026-10-27T04:58:58.639Z"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 1,
+  "fields": {
+   "product": 1,
+   "image": "products/samsung-galaxy-s24-ultra-12-gb-256-gb-1.jpg",
+   "thumbnail": "products/thumbs/samsung-galaxy-s24-ultra-12-gb-256-gb-1.jpg",
+   "alt": "Samsung Galaxy S24 Ultra (12 GB / 256 GB)",
+   "position": 0,
+   "author": "webtekno",
+   "license": "CC BY 3.0",
+   "license_url": "https://creativecommons.org/licenses/by/3.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_S24_(webtekno)_008.png"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 2,
+  "fields": {
+   "product": 2,
+   "image": "products/apple-iphone-15-128-gb-1.jpg",
+   "thumbnail": "products/thumbs/apple-iphone-15-128-gb-1.jpg",
+   "alt": "Apple iPhone 15 (128 GB)",
+   "position": 0,
+   "author": "ThePhotoGraphIc",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Back_of_iPhone_15.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 3,
+  "fields": {
+   "product": 3,
+   "image": "products/google-pixel-8a-8-gb-128-gb-1.jpg",
+   "thumbnail": "products/thumbs/google-pixel-8a-8-gb-128-gb-1.jpg",
+   "alt": "Google Pixel 8a (8 GB / 128 GB)",
+   "position": 0,
+   "author": "Miyako Fujimiya",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Pixel_8a.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 4,
+  "fields": {
+   "product": 4,
+   "image": "products/google-pixel-8-rose-128-gb-1.jpg",
+   "thumbnail": "products/thumbs/google-pixel-8-rose-128-gb-1.jpg",
+   "alt": "Google Pixel 8 (Rose, 128 GB)",
+   "position": 0,
+   "author": "IXTA9839",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Google_Pixel_8_Rose_rear.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 5,
+  "fields": {
+   "product": 5,
+   "image": "products/oneplus-nord-5-12-gb-256-gb-1.jpg",
+   "thumbnail": "products/thumbs/oneplus-nord-5-12-gb-256-gb-1.jpg",
+   "alt": "OnePlus Nord 5 (12 GB / 256 GB)",
+   "position": 0,
+   "author": "Maksdroider",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:OnePlus_Nord_5_back.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 6,
+  "fields": {
+   "product": 6,
+   "image": "products/xiaomi-redmi-note-14-pro-5g-8-gb-256-gb-1.jpg",
+   "thumbnail": "products/thumbs/xiaomi-redmi-note-14-pro-5g-8-gb-256-gb-1.jpg",
+   "alt": "Xiaomi Redmi Note 14 Pro+ 5G (8 GB / 256 GB)",
+   "position": 0,
+   "author": "Maksdroider",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Redmi_Note_14_ProPlus.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 7,
+  "fields": {
+   "product": 7,
+   "image": "products/apple-macbook-air-13-m2-16-gb-256-gb-1.jpg",
+   "thumbnail": "products/thumbs/apple-macbook-air-13-m2-16-gb-256-gb-1.jpg",
+   "alt": "Apple MacBook Air 13\" (M2, 16 GB / 256 GB)",
+   "position": 0,
+   "author": "KKPCW（Kyu3）",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:M2_Macbook_Air_Midnight_model_-_1.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 8,
+  "fields": {
+   "product": 8,
+   "image": "products/lenovo-ideapad-flex-5-14-ryzen-5-1.jpg",
+   "thumbnail": "products/thumbs/lenovo-ideapad-flex-5-14-ryzen-5-1.jpg",
+   "alt": "Lenovo IdeaPad Flex 5 14\" (Ryzen 5)",
+   "position": 0,
+   "author": "Info-farmer",
+   "license": "CC0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Lenovo_IdeaPad_Flex14_laptop.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 9,
+  "fields": {
+   "product": 9,
+   "image": "products/hp-pavilion-14-core-i5-1.jpg",
+   "thumbnail": "products/thumbs/hp-pavilion-14-core-i5-1.jpg",
+   "alt": "HP Pavilion 14 (Core i5)",
+   "position": 0,
+   "author": "Joelly123",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:HP_Pavilion_laptop.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 10,
+  "fields": {
+   "product": 10,
+   "image": "products/asus-tuf-gaming-f15-rtx-4050-1.jpg",
+   "thumbnail": "products/thumbs/asus-tuf-gaming-f15-rtx-4050-1.jpg",
+   "alt": "ASUS TUF Gaming F15 (RTX 4050)",
+   "position": 0,
+   "author": "HuangWending18072009",
+   "license": "CC0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source_url": "https://commons.wikimedia.org/wiki/File:ASUS_TUF_Gaming_5_Pro_Laptop.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 11,
+  "fields": {
+   "product": 11,
+   "image": "products/dell-xps-13-core-ultra-7-1.jpg",
+   "thumbnail": "products/thumbs/dell-xps-13-core-ultra-7-1.jpg",
+   "alt": "Dell XPS 13 (Core Ultra 7)",
+   "position": 0,
+   "author": "Green-Curtain",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Dell_XPS_13_9350.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 12,
+  "fields": {
+   "product": 12,
+   "image": "products/apple-airpods-pro-2nd-generation-usb-c-1.jpg",
+   "thumbnail": "products/thumbs/apple-airpods-pro-2nd-generation-usb-c-1.jpg",
+   "alt": "Apple AirPods Pro (2nd generation, USB-C)",
+   "position": 0,
+   "author": "Hajoon0102",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:AirPods_Pro_(2nd_generation).jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 13,
+  "fields": {
+   "product": 13,
+   "image": "products/bose-quietcomfort-ultra-earbuds-1.jpg",
+   "thumbnail": "products/thumbs/bose-quietcomfort-ultra-earbuds-1.jpg",
+   "alt": "Bose QuietComfort Ultra Earbuds",
+   "position": 0,
+   "author": "Kyu3",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Bose_QuietComfort_Ultra_Earbuds_-_2.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 14,
+  "fields": {
+   "product": 14,
+   "image": "products/sony-wh-1000xm3-wireless-noise-cancelling-1.jpg",
+   "thumbnail": "products/thumbs/sony-wh-1000xm3-wireless-noise-cancelling-1.jpg",
+   "alt": "Sony WH-1000XM3 Wireless Noise Cancelling",
+   "position": 0,
+   "author": "www.digitalpush.net",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Sony-WH-1000XM3-kabellose-Bluetooth-Noise-Cancelling-Kopfhoerer.3.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 15,
+  "fields": {
+   "product": 15,
+   "image": "products/apple-airpods-max-1.jpg",
+   "thumbnail": "products/thumbs/apple-airpods-max-1.jpg",
+   "alt": "Apple AirPods Max",
+   "position": 0,
+   "author": "SimonWaldherr",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Apple_AirPods_Max.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 16,
+  "fields": {
+   "product": 16,
+   "image": "products/samsung-galaxy-buds2-pro-1.jpg",
+   "thumbnail": "products/thumbs/samsung-galaxy-buds2-pro-1.jpg",
+   "alt": "Samsung Galaxy Buds2 Pro",
+   "position": 0,
+   "author": "Gannu03",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_Buds2_Pro_(Graphite).jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 17,
+  "fields": {
+   "product": 17,
+   "image": "products/jbl-live-650btnc-1.jpg",
+   "thumbnail": "products/thumbs/jbl-live-650btnc-1.jpg",
+   "alt": "JBL Live 650BTNC",
+   "position": 0,
+   "author": "MIKI Yoshihito from Sapporo City,Hokkaido., JAPAN",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:JBL_LIVE_650_BTNC_(Over-Ear_Noise_Cancelling_Headphone)._(51127342181).jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 18,
+  "fields": {
+   "product": 18,
+   "image": "products/jbl-endurance-peak-3-1.jpg",
+   "thumbnail": "products/thumbs/jbl-endurance-peak-3-1.jpg",
+   "alt": "JBL Endurance Peak 3",
+   "position": 0,
+   "author": "KKPCW（Kyu3）",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:JBL_Endurance_Peak_3_-_1.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 19,
+  "fields": {
+   "product": 19,
+   "image": "products/sennheiser-hd-25-studio-headphones-1.jpg",
+   "thumbnail": "products/thumbs/sennheiser-hd-25-studio-headphones-1.jpg",
+   "alt": "Sennheiser HD 25 Studio Headphones",
+   "position": 0,
+   "author": "Bizzarle",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Sennheiser_hd-25_headphones.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 20,
+  "fields": {
+   "product": 20,
+   "image": "products/apple-watch-se-2nd-gen-gps-40-mm-1.jpg",
+   "thumbnail": "products/thumbs/apple-watch-se-2nd-gen-gps-40-mm-1.jpg",
+   "alt": "Apple Watch SE (2nd gen, GPS, 40 mm)",
+   "position": 0,
+   "author": "茅野ふたば",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Watch_SE_(2nd_generation).jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 21,
+  "fields": {
+   "product": 21,
+   "image": "products/samsung-galaxy-watch6-40-mm-1.jpg",
+   "thumbnail": "products/thumbs/samsung-galaxy-watch6-40-mm-1.jpg",
+   "alt": "Samsung Galaxy Watch6 (40 mm)",
+   "position": 0,
+   "author": "Ganesh Mohan T",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_Watch_6_3.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 22,
+  "fields": {
+   "product": 22,
+   "image": "products/samsung-galaxy-watch6-classic-43-mm-1.jpg",
+   "thumbnail": "products/thumbs/samsung-galaxy-watch6-classic-43-mm-1.jpg",
+   "alt": "Samsung Galaxy Watch6 Classic (43 mm)",
+   "position": 0,
+   "author": "Mattmates",
+   "license": "CC0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_Watch6_Classic_43mm.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 23,
+  "fields": {
+   "product": 23,
+   "image": "products/huawei-watch-fit-2-1.jpg",
+   "thumbnail": "products/thumbs/huawei-watch-fit-2-1.jpg",
+   "alt": "Huawei Watch Fit 2",
+   "position": 0,
+   "author": "D Eaketts",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Huawei_Smartwatch_Fit_2.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 24,
+  "fields": {
+   "product": 24,
+   "image": "products/apple-ipad-10th-generation-wi-fi-64-gb-1.jpg",
+   "thumbnail": "products/thumbs/apple-ipad-10th-generation-wi-fi-64-gb-1.jpg",
+   "alt": "Apple iPad (10th generation, Wi-Fi, 64 GB)",
+   "position": 0,
+   "author": "Captainmorlypogi1959",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:IPad_10th_Generation_2024.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 25,
+  "fields": {
+   "product": 25,
+   "image": "products/samsung-galaxy-tab-s9-wi-fi-128-gb-1.jpg",
+   "thumbnail": "products/thumbs/samsung-galaxy-tab-s9-wi-fi-128-gb-1.jpg",
+   "alt": "Samsung Galaxy Tab S9 (Wi-Fi, 128 GB)",
+   "position": 0,
+   "author": "Striker9498",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:20230729_%EC%82%BC%EC%84%B1_%EA%B0%A4%EB%9F%AD%EC%8B%9C_%ED%83%AD_S9.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 26,
+  "fields": {
+   "product": 26,
+   "image": "products/lenovo-tab-m10-fhd-plus-1.jpg",
+   "thumbnail": "products/thumbs/lenovo-tab-m10-fhd-plus-1.jpg",
+   "alt": "Lenovo Tab M10 FHD Plus",
+   "position": 0,
+   "author": "Gpkp",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Lenovo_Tab_M10_FHD_Plus_(2026).jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 27,
+  "fields": {
+   "product": 27,
+   "image": "products/logitech-mx-master-3s-wireless-mouse-1.jpg",
+   "thumbnail": "products/thumbs/logitech-mx-master-3s-wireless-mouse-1.jpg",
+   "alt": "Logitech MX Master 3S Wireless Mouse",
+   "position": 0,
+   "author": "Hayden Schiff",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Logitech_MX_Master_3S_HS12.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 28,
+  "fields": {
+   "product": 28,
+   "image": "products/sandisk-extreme-portable-ssd-1-tb-1.jpg",
+   "thumbnail": "products/thumbs/sandisk-extreme-portable-ssd-1-tb-1.jpg",
+   "alt": "SanDisk Extreme Portable SSD 1 TB",
+   "position": 0,
+   "author": "ITEagle Europe - Sebastiaan Broekhoven",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:SanDisk_Extreme_Portable_SSD_1_TB_-_front_view.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 29,
+  "fields": {
+   "product": 29,
+   "image": "products/anker-powerport-40-w-5-port-usb-charger-1.jpg",
+   "thumbnail": "products/thumbs/anker-powerport-40-w-5-port-usb-charger-1.jpg",
+   "alt": "Anker PowerPort 40 W 5-Port USB Charger",
+   "position": 0,
+   "author": "www.digitalpush.net",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Anker-PowerPort-40W-5-Port-USB-Ladegeraet.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 30,
+  "fields": {
+   "product": 1,
+   "image": "products/samsung-galaxy-s24-ultra-12-gb-256-gb-2.jpg",
+   "thumbnail": "products/thumbs/samsung-galaxy-s24-ultra-12-gb-256-gb-2.jpg",
+   "alt": "Samsung Galaxy S24 Ultra (12 GB / 256 GB)",
+   "position": 1,
+   "author": "Benlisquare",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_S24_Ultra_with_retail_box,_front.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 31,
+  "fields": {
+   "product": 2,
+   "image": "products/apple-iphone-15-128-gb-2.jpg",
+   "thumbnail": "products/thumbs/apple-iphone-15-128-gb-2.jpg",
+   "alt": "Apple iPhone 15 (128 GB)",
+   "position": 1,
+   "author": "Ka Kit Pang",
+   "license": "Public domain",
+   "license_url": "",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Apple_iPhone_15.jpeg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 32,
+  "fields": {
+   "product": 3,
+   "image": "products/google-pixel-8a-8-gb-128-gb-2.jpg",
+   "thumbnail": "products/thumbs/google-pixel-8a-8-gb-128-gb-2.jpg",
+   "alt": "Google Pixel 8a (8 GB / 128 GB)",
+   "position": 1,
+   "author": "Miyako Fujimiya",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Rear_view_of_Pixel_8a.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 33,
+  "fields": {
+   "product": 4,
+   "image": "products/google-pixel-8-rose-128-gb-2.jpg",
+   "thumbnail": "products/thumbs/google-pixel-8-rose-128-gb-2.jpg",
+   "alt": "Google Pixel 8 (Rose, 128 GB)",
+   "position": 1,
+   "author": "IXTA9839",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Google_Pixel_8_Rose_front.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 34,
+  "fields": {
+   "product": 5,
+   "image": "products/oneplus-nord-5-12-gb-256-gb-2.jpg",
+   "thumbnail": "products/thumbs/oneplus-nord-5-12-gb-256-gb-2.jpg",
+   "alt": "OnePlus Nord 5 (12 GB / 256 GB)",
+   "position": 1,
+   "author": "Maksdroider",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:OnePlus_Nord_5_front.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 35,
+  "fields": {
+   "product": 7,
+   "image": "products/apple-macbook-air-13-m2-16-gb-256-gb-2.jpg",
+   "thumbnail": "products/thumbs/apple-macbook-air-13-m2-16-gb-256-gb-2.jpg",
+   "alt": "Apple MacBook Air 13\" (M2, 16 GB / 256 GB)",
+   "position": 1,
+   "author": "KKPCW（Kyu3）",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:M2_Macbook_Air_Midnight_model_-_2.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 36,
+  "fields": {
+   "product": 8,
+   "image": "products/lenovo-ideapad-flex-5-14-ryzen-5-2.jpg",
+   "thumbnail": "products/thumbs/lenovo-ideapad-flex-5-14-ryzen-5-2.jpg",
+   "alt": "Lenovo IdeaPad Flex 5 14\" (Ryzen 5)",
+   "position": 1,
+   "author": "Info-farmer",
+   "license": "CC0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Lenovo_IdeaPad_Flex14_laptop_(Leftside).jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 37,
+  "fields": {
+   "product": 13,
+   "image": "products/bose-quietcomfort-ultra-earbuds-2.jpg",
+   "thumbnail": "products/thumbs/bose-quietcomfort-ultra-earbuds-2.jpg",
+   "alt": "Bose QuietComfort Ultra Earbuds",
+   "position": 1,
+   "author": "Kyu3",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Bose_QuietComfort_Ultra_Earbuds_-_1.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 38,
+  "fields": {
+   "product": 14,
+   "image": "products/sony-wh-1000xm3-wireless-noise-cancelling-2.jpg",
+   "thumbnail": "products/thumbs/sony-wh-1000xm3-wireless-noise-cancelling-2.jpg",
+   "alt": "Sony WH-1000XM3 Wireless Noise Cancelling",
+   "position": 1,
+   "author": "www.digitalpush.net",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Sony-WH-1000XM3-kabellose-Bluetooth-Noise-Cancelling-Kopfhoerer.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 39,
+  "fields": {
+   "product": 15,
+   "image": "products/apple-airpods-max-2.jpg",
+   "thumbnail": "products/thumbs/apple-airpods-max-2.jpg",
+   "alt": "Apple AirPods Max",
+   "position": 1,
+   "author": "SimonWaldherr",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Apple_AirPods_Max_2.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 40,
+  "fields": {
+   "product": 16,
+   "image": "products/samsung-galaxy-buds2-pro-2.jpg",
+   "thumbnail": "products/thumbs/samsung-galaxy-buds2-pro-2.jpg",
+   "alt": "Samsung Galaxy Buds2 Pro",
+   "position": 1,
+   "author": "Gannu03",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_Buds2_Pro_(Graphite)_(2).jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 41,
+  "fields": {
+   "product": 18,
+   "image": "products/jbl-endurance-peak-3-2.jpg",
+   "thumbnail": "products/thumbs/jbl-endurance-peak-3-2.jpg",
+   "alt": "JBL Endurance Peak 3",
+   "position": 1,
+   "author": "KKPCW（Kyu3）",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:JBL_Endurance_Peak_3_-_3.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 42,
+  "fields": {
+   "product": 20,
+   "image": "products/apple-watch-se-2nd-gen-gps-40-mm-2.jpg",
+   "thumbnail": "products/thumbs/apple-watch-se-2nd-gen-gps-40-mm-2.jpg",
+   "alt": "Apple Watch SE (2nd gen, GPS, 40 mm)",
+   "position": 1,
+   "author": "AzureSaturn",
+   "license": "CC0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Apple_Watch_SE_2_(GPS_%2B_Cellular,_40mm,_Midnight)_with_Anchor_Blue_Sport_Loop.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 43,
+  "fields": {
+   "product": 21,
+   "image": "products/samsung-galaxy-watch6-40-mm-2.jpg",
+   "thumbnail": "products/thumbs/samsung-galaxy-watch6-40-mm-2.jpg",
+   "alt": "Samsung Galaxy Watch6 (40 mm)",
+   "position": 1,
+   "author": "Ganesh Mohan T",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_Watch_6.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 44,
+  "fields": {
+   "product": 24,
+   "image": "products/apple-ipad-10th-generation-wi-fi-64-gb-2.jpg",
+   "thumbnail": "products/thumbs/apple-ipad-10th-generation-wi-fi-64-gb-2.jpg",
+   "alt": "Apple iPad (10th generation, Wi-Fi, 64 GB)",
+   "position": 1,
+   "author": "メイド理世",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:About_iPad_(10th_generation).jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 45,
+  "fields": {
+   "product": 25,
+   "image": "products/samsung-galaxy-tab-s9-wi-fi-128-gb-2.jpg",
+   "thumbnail": "products/thumbs/samsung-galaxy-tab-s9-wi-fi-128-gb-2.jpg",
+   "alt": "Samsung Galaxy Tab S9 (Wi-Fi, 128 GB)",
+   "position": 1,
+   "author": "AnVuong1222004 (11)",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_Tab_S9.png"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 46,
+  "fields": {
+   "product": 27,
+   "image": "products/logitech-mx-master-3s-wireless-mouse-2.jpg",
+   "thumbnail": "products/thumbs/logitech-mx-master-3s-wireless-mouse-2.jpg",
+   "alt": "Logitech MX Master 3S Wireless Mouse",
+   "position": 1,
+   "author": "Hayden Schiff",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Logitech_MX_Master_3S_HS02.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 47,
+  "fields": {
+   "product": 28,
+   "image": "products/sandisk-extreme-portable-ssd-1-tb-2.jpg",
+   "thumbnail": "products/thumbs/sandisk-extreme-portable-ssd-1-tb-2.jpg",
+   "alt": "SanDisk Extreme Portable SSD 1 TB",
+   "position": 1,
+   "author": "ITEagle Europe - Sebastiaan Broekhoven",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:SanDisk_Extreme_Portable_SSD_1_TB_-_front_view_with_cable.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 48,
+  "fields": {
+   "product": 29,
+   "image": "products/anker-powerport-40-w-5-port-usb-charger-2.jpg",
+   "thumbnail": "products/thumbs/anker-powerport-40-w-5-port-usb-charger-2.jpg",
+   "alt": "Anker PowerPort 40 W 5-Port USB Charger",
+   "position": 1,
+   "author": "www.digitalpush.net",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Anker-PowerPort-40W-5-Port-USB-Ladegeraet.2.jpg"
+  }
+ },
+ {
+  "model": "catalog.productimage",
+  "pk": 49,
+  "fields": {
+   "product": 27,
+   "image": "products/logitech-mx-master-3s-wireless-mouse-3.jpg",
+   "thumbnail": "products/thumbs/logitech-mx-master-3s-wireless-mouse-3.jpg",
+   "alt": "Logitech MX Master 3S Wireless Mouse",
+   "position": 2,
+   "author": "Hayden Schiff",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source_url": "https://commons.wikimedia.org/wiki/File:Logitech_MX_Master_3S_HS13.jpg"
+  }
+ }
+]

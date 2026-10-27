@@ -14,8 +14,10 @@
     </form>
     <p class="center small mt-3 mb-0">New to {{ STORE_NAME }}? <a href="{% url 'accounts:register' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Create your account</a></p>
   </div>
+  {% if SHOW_DEMO_LOGINS %}
   <div class="demo-logins center">
     <span>Demo logins: <code>customer</code> / <code>Customer@12345</code> · <code>agent1</code> / <code>Agent@12345</code> · <code>admin</code> / <code>Admin@12345</code></span>
   </div>
+  {% endif %}
 </div>
 {% endblock %}

@@ -15,4 +15,5 @@ urlpatterns = [
     path('users/', views.user_list, name='users'),
     path('users/<int:pk>/edit/', views.user_update, name='user_edit'),
     path('system/', views.system_status, name='system'),
+    path('system/test-email/', views.send_test_email, name='test_email'),
 ]

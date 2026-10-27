@@ -20,6 +20,7 @@ def store(request):
         'STORE_NAME': settings.STORE_NAME,
         'CURRENCY': settings.CURRENCY_SYMBOL,
         'ASSET_VERSION': settings.ASSET_VERSION,
+        'SHOW_DEMO_LOGINS': settings.SHOW_DEMO_LOGINS,
         'THEMES': THEMES,
         'THEME_KEYS': THEME_KEYS,
         'STORE_THEME': settings.STORE_THEME if settings.STORE_THEME in THEME_KEYS else 'mj',

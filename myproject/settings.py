@@ -144,7 +144,10 @@ def _database_from_url(url):
 
 # DATABASE_URL (e.g. Neon or Vercel Postgres) for production. Without it, SQLite:
 # the local db.sqlite3, or on Vercel a demo copy in /tmp that resets on cold starts.
-DATABASE_URL = os.environ.get('DATABASE_URL', '')
+# Vercel's Neon/Postgres integration sets DATABASE_URL (older setups: POSTGRES_URL).
+DATABASE_URL = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL', '')
+# The demo accounts only exist in the demo/seeded SQLite database, not in a real Postgres store.
+SHOW_DEMO_LOGINS = not DATABASE_URL
 DEMO_DATABASE = BASE_DIR / 'deploy' / 'demo.sqlite3'
 if DATABASE_URL:
     DATABASES = {'default': _database_from_url(DATABASE_URL)}
@@ -195,7 +198,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Bumped when CSS/JS change so browsers fetch the new files instead of cached ones.
-ASSET_VERSION = '5.0'
+ASSET_VERSION = '5.1'
 # WhiteNoise serves static files in production straight from the app folders, so no
 # collectstatic step is needed; ASSET_VERSION query strings handle cache busting.
 WHITENOISE_USE_FINDERS = True
@@ -283,6 +286,10 @@ PINCODE_API_TIMEOUT = float(os.environ.get('PINCODE_API_TIMEOUT', '3'))
 
 # Who gets a "New order" email when a customer pays (comma separated).
 ORDER_ALERT_EMAILS = [e.strip() for e in os.environ.get('ORDER_ALERT_EMAILS', '').split(',') if e.strip()]
+# Who gets a "New ticket" email when a customer raises one (defaults to ORDER_ALERT_EMAILS).
+TICKET_ALERT_EMAILS = (
+    [e.strip() for e in os.environ.get('TICKET_ALERT_EMAILS', '').split(',') if e.strip()] or ORDER_ALERT_EMAILS
+)
 
 # Public address of the site, for links in emails. Vercel provides its production domain.
 _vercel_domain = os.environ.get('VERCEL_PROJECT_PRODUCTION_URL', '')

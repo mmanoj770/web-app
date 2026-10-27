@@ -265,6 +265,32 @@ def user_update(request, pk):
 # --- System status (administrators only) -------------------------------------
 
 @admin_required
+@require_POST
+def send_test_email(request):
+    """Send a test email to the alert addresses and the admin, showing the exact error if it fails."""
+    from django.conf import settings
+    from django.core.mail import mailers, send_mail
+
+    recipients = list(dict.fromkeys([*settings.ORDER_ALERT_EMAILS, request.user.email]))
+    recipients = [r for r in recipients if r]
+    backend = mailers.default.__class__.__module__.rsplit('.', 1)[-1]
+    if backend in ('console', 'locmem', 'dummy'):
+        messages.warning(request, 'Real email is off, so the test email was only printed to the server log. Set '
+                                  'EMAIL_HOST_USER and EMAIL_HOST_PASSWORD (a Gmail App Password) and restart.')
+    try:
+        send_mail(f'[{settings.STORE_NAME}] Test email',
+                  f'This is a test from {settings.STORE_NAME} ({settings.SITE_URL}). If you can read it, order and '
+                  'ticket emails will reach this inbox.', settings.DEFAULT_FROM_EMAIL, recipients)
+    except Exception as exc:  # Show any SMTP problem to the admin.
+        messages.error(request, f'Sending failed: {exc.__class__.__name__}: {exc}')
+    else:
+        if backend not in ('console', 'locmem', 'dummy'):
+            messages.success(request, f'Test email sent to {", ".join(recipients)}. Check the inbox and the spam '
+                                      'folder.')
+    return redirect('dashboard:system')
+
+
+@admin_required
 def system_status(request):
     """Health of each backend component, so admins can see what is live and what is simulated."""
     import platform
@@ -314,12 +340,14 @@ def system_status(request):
     # Email.
     backend = mailers.default.__class__.__module__.rsplit('.', 1)[-1]
     alerts = ', '.join(settings.ORDER_ALERT_EMAILS) or 'nobody (set ORDER_ALERT_EMAILS)'
+    ticket_alerts = ', '.join(settings.TICKET_ALERT_EMAILS) or 'nobody'
     if backend in ('console', 'locmem', 'dummy'):
-        add('Email', True, 'Printed to the server console', 'Set EMAIL_HOST_USER and EMAIL_HOST_PASSWORD to send '
-            f'real emails. New-order alerts: {alerts}.', 'development')
+        add('Email', False, 'Not sending: emails are only printed to the server log',
+            'Set EMAIL_HOST_USER and EMAIL_HOST_PASSWORD (a Gmail App Password) to send real emails. '
+            f'New-order alerts: {alerts}. New-ticket alerts: {ticket_alerts}.')
     else:
-        add('Email', True, f'{backend.upper()} backend', 'Order and ticket emails are sent to customers. '
-            f'New-order alerts: {alerts}.')
+        add('Email', True, f'{backend.upper()} via {mailers.default.host}', 'Order and ticket emails are sent to '
+            f'customers. New-order alerts: {alerts}. New-ticket alerts: {ticket_alerts}.')
 
     # MongoDB (chat transcripts and feedback).
     from myproject import mongo

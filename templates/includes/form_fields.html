@@ -11,7 +11,16 @@
   {% else %}
     <div class="field">
       <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-      {{ field|bs }}
+      {% if field.field.widget.input_type == 'password' %}
+        <div class="password-field">
+          {{ field|bs }}
+          <button class="password-toggle" type="button" data-password-toggle aria-label="Show password" aria-pressed="false" aria-controls="{{ field.id_for_label }}">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+      {% else %}
+        {{ field|bs }}
+      {% endif %}
       {% if field.help_text %}<div class="help">{{ field.help_text|safe }}</div>{% endif %}
       {% for error in field.errors %}<div class="error">{{ error }}</div>{% endfor %}
     </div>

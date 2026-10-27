@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 from django.conf import settings
@@ -5,11 +6,14 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Count, Q
+from django.urls import reverse
 from django.utils import timezone
 
 from myproject import mongo
 
 from .models import Ticket, TicketAttachment, TicketMessage
+
+logger = logging.getLogger(__name__)
 
 HIGH_PRIORITY_CATEGORIES = {Ticket.Category.PAYMENT_FAILURE, Ticket.Category.MISSING_DELIVERY}
 LOW_PRIORITY_CATEGORIES = {Ticket.Category.PRODUCT_QUESTION}
@@ -60,6 +64,14 @@ def create_ticket(customer, category, subject, description, order=None, source=T
         transaction.on_commit(lambda: _notify(
             [agent_email], f'New ticket assigned: {ticket.code}', f'{ticket.subject}\n\n{ticket.description}',
         ))
+    alert_body = (f'{customer.get_full_name() or customer.username} ({customer.email}) raised {ticket.code} '
+                  f'[{ticket.get_category_display()}, {ticket.get_priority_display()} priority]'
+                  f'{f" about order {order.number}" if order else ""}.\n\n{ticket.subject}\n\n'
+                  f'{ticket.description}\n\nOpen it: {settings.SITE_URL}'
+                  f'{reverse("dashboard:ticket_detail", args=[ticket.code])}')
+    transaction.on_commit(lambda: _notify(
+        settings.TICKET_ALERT_EMAILS, f'New ticket {ticket.code}: {ticket.subject}', alert_body,
+    ))
     return ticket
 
 
@@ -159,6 +171,10 @@ def _save_attachments(ticket, files, uploaded_by, message=None):
 
 def _notify(recipients, subject, body):
     recipients = [r for r in recipients if r]
-    if recipients:
-        send_mail(f'[{settings.STORE_NAME}] {subject}', body, settings.DEFAULT_FROM_EMAIL,
-                  recipients, fail_silently=True)
+    if not recipients:
+        return
+    try:
+        send_mail(f'[{settings.STORE_NAME}] {subject}', body, settings.DEFAULT_FROM_EMAIL, recipients)
+    except Exception:
+        # Never fail a ticket because of email; the log shows why (e.g. a wrong App Password).
+        logger.exception('Could not send "%s" to %s', subject, ', '.join(recipients))

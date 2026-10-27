@@ -207,12 +207,14 @@ python manage.py test
 
 When a payment succeeds, the customer gets an order confirmation (items, total, address, delivery date and
 a tracking link) and everyone in `ORDER_ALERT_EMAILS` gets a "New order" email with a link to the dashboard.
+New tickets are emailed to `TICKET_ALERT_EMAILS` (default: the same addresses).
 Customers also get an email whenever the order status changes, and ticket updates are emailed too.
 
 Emails are printed to the server console until you set `EMAIL_HOST_USER` and `EMAIL_HOST_PASSWORD`. For
 Gmail, turn on 2-Step Verification, create an App Password (Google Account → Security → App passwords) and
 put your address and that password in `.env` (locally) and in Vercel's environment variables. Never commit
-the password. Dashboard → System shows whether real email is on and who receives new-order alerts.
+the password. Dashboard → System shows whether real email is on and who receives alerts, and its **Send test
+email** button shows the exact error if Gmail rejects the login.
 
 ## Deploying to Vercel
 
@@ -227,24 +229,28 @@ In Vercel → Project → Settings → Environment Variables, set:
 | `DATABASE_URL` | A Postgres URL, e.g. from Neon (Vercel → Storage → Neon). Optional, see below. |
 | `ANTHROPIC_API_KEY` (or another provider's key) | Optional: powers the AI assistant. Ollama can't run on Vercel. |
 | `MONGODB_URI` | Optional: MongoDB Atlas connection string for chats and feedback |
+| `DJANGO_ADMIN_USERNAME`, `DJANGO_ADMIN_PASSWORD`, `DJANGO_ADMIN_EMAIL` | Your admin account, created on the first start with `DATABASE_URL` |
+| `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | Gmail address and App Password, to send real emails |
+| `ORDER_ALERT_EMAILS`, `TICKET_ALERT_EMAILS` | Who gets "New order" and "New ticket" emails (ticket alerts default to the order list) |
 | `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | Only for a custom domain: `shop.example.com` and `https://shop.example.com` |
 
 **Without `DATABASE_URL`** the site runs on a demo copy of the store (`deploy/demo.sqlite3`, copied to `/tmp`
-when an instance starts). It works straight away, but sign-ups, orders and tickets are lost whenever Vercel starts
-a new instance, and the demo accounts' passwords are public.
+when an instance starts). Every Vercel instance gets its own copy, so sign-ins, sign-ups and tickets are not
+shared between instances (customers get asked to sign in again) and reset on cold starts. Use it for a quick
+look only.
 
-**With `DATABASE_URL`**, data is permanent. Set up the database once from your computer:
+**With `DATABASE_URL`** (one shared Postgres database) everything is permanent and shared. Easiest setup:
 
-```bash
-DATABASE_URL='postgresql://...' python manage.py migrate
-DATABASE_URL='postgresql://...' python manage.py seed_store --no-users --no-images   # products only
-DATABASE_URL='postgresql://...' python manage.py createsuperuser                     # your admin account
-```
+1. Vercel → your project → **Storage** → **Create Database** → **Neon (Postgres)** → connect it to the project.
+   This adds `DATABASE_URL` for you.
+2. Add `DJANGO_ADMIN_USERNAME`, `DJANGO_ADMIN_PASSWORD` and `DJANGO_ADMIN_EMAIL` (your admin account).
+3. **Redeploy.** On its first start the app applies migrations, loads the product catalog with photos
+   (`deploy/catalog.json`) and creates your admin account (`myproject/vercel.py`). It never overwrites a
+   password you change later. The demo logins are hidden on a real database.
 
-Run `migrate` the same way after pulling changes that add migrations. Photos uploaded on Vercel (ticket
-photos, new product photos) don't survive a new instance; use object storage such as Vercel Blob or S3 for those.
-To rebuild the demo database, run `migrate` and `seed_store` against an empty SQLite file and save it as
-`deploy/demo.sqlite3`.
+Photos uploaded on Vercel (ticket photos, new product photos) don't survive a new instance; use object storage
+such as Vercel Blob or S3 for those. To rebuild the demo database, run `migrate` and `seed_store` against an
+empty SQLite file and save it as `deploy/demo.sqlite3`.
 
 ## Improvements
 

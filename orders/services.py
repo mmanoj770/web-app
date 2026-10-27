@@ -1,3 +1,4 @@
+import logging
 from decimal import Decimal
 
 from django.conf import settings
@@ -9,6 +10,9 @@ from catalog.models import Product
 
 from . import emails, payments
 from .models import Order, OrderEvent, OrderItem, Payment
+
+
+logger = logging.getLogger(__name__)
 
 
 class CheckoutError(Exception):
@@ -122,10 +126,8 @@ def _notify_status(order, note):
         body += f'\n\n{note}'
     if order.tracking_number:
         body += f'\n\nCarrier: {order.carrier}\nTracking number: {order.tracking_number}'
-    send_mail(
-        f'[{settings.STORE_NAME}] Order {order.number} update',
-        body,
-        settings.DEFAULT_FROM_EMAIL,
-        [order.user.email],
-        fail_silently=True,
-    )
+    try:
+        send_mail(f'[{settings.STORE_NAME}] Order {order.number} update', body, settings.DEFAULT_FROM_EMAIL,
+                  [order.user.email])
+    except Exception:
+        logger.exception('Could not send the status email for %s', order.number)
