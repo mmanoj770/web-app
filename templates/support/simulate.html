@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Error code demonstrations · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<section class="help-hero">
+  <div class="eyebrow">Help center · Error codes</div>
+  <h1>See every error code for yourself</h1>
+  <p class="muted" style="font-size: 17px">
+    All {{ total }} codes in the <span class="code-pill">ErrorCode</span> table, each with a button that triggers
+    the store's real error path. Every button returns the same page, the same HTTP status and the same log line a
+    customer gets when it happens on its own — nothing here is a mock-up.
+  </p>
+  <p class="xsmall muted">
+    Rate limited to {{ rate_limit }} triggers a minute, so clicking quickly demonstrates
+    <a class="code-pill" href="{% url 'support:error_codes' %}#WEB-429">WEB-429</a> too.
+    Turn the page off in production with <span class="code-pill">ERROR_SIMULATOR=0</span>.
+  </p>
+</section>
+
+<section class="section">
+  <div class="panel">
+    <h2>No internet connection</h2>
+    <p class="muted">
+      A service worker (<span class="code-pill">/sw.js</span>) is registered on every page. Turn off Wi-Fi or
+      mobile data and reload: instead of the browser's own "no connection" screen you get the store's
+      <a class="code-pill" href="{% url 'support:error_codes' %}#NET-001">NET-001</a> page, which explains the code
+      and reloads itself once you reconnect. Requests that fail while you are still online show
+      <a class="code-pill" href="{% url 'support:error_codes' %}#NET-002">NET-002</a> as a banner.
+    </p>
+    <div class="row mt-2" style="flex-wrap: wrap">
+      <a class="btn btn-primary" href="{% url 'offline' %}">Open the offline page</a>
+      <button class="btn btn-white" type="button" data-net-test>Make a request fail now (NET-002)</button>
+      <a class="btn btn-outline" href="{% url 'health' %}">Check /health/</a>
+    </div>
+    <p class="xsmall muted mt-2" data-sw-status>Checking the service worker…</p>
+  </div>
+</section>
+
+{% for group in groups %}
+<section class="section">
+  <h2>{{ group.label }}</h2>
+  <div class="error-codes">
+    {% for row in group.rows %}
+      <article class="card" id="simulate-{{ row.error.code }}">
+        <div class="row-between">
+          <span class="code-pill">{{ row.error.code }}</span>
+          <span class="xsmall muted">{% if row.error.http_status %}HTTP {{ row.error.http_status }}{% else %}No reply from the server{% endif %}</span>
+        </div>
+        <h3><i class="bi bi-{{ row.icon }}"></i> {{ row.error.title }}</h3>
+        <p class="muted">{{ row.error.meaning }}</p>
+        {% if row.where %}<p class="xsmall muted"><strong>Happens on its own when:</strong> {{ row.where }}</p>{% endif %}
+        <div class="row mt-2" style="flex-wrap: wrap">
+          {% if row.client_side %}
+            <a class="btn btn-primary btn-sm" href="{{ row.trigger }}">Show me</a>
+          {% else %}
+            <a class="btn btn-primary btn-sm" href="{{ row.trigger }}">Show the page</a>
+          {% endif %}
+          {% if row.can_raise %}
+            <a class="btn btn-white btn-sm" href="{{ row.trigger }}?raise=1" data-no-prefetch>Raise it for real</a>
+          {% endif %}
+          {% if row.link %}
+            <a class="btn btn-outline btn-sm" href="{{ row.link }}" data-no-prefetch>Where it happens</a>
+          {% endif %}
+          <button class="btn btn-white btn-sm" type="button" data-ask="What does error {{ row.error.code }} mean?"><i class="bi bi-stars"></i> Ask AI</button>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+
+<section class="section">
+  <div class="panel center">
+    <h2>How this is wired up</h2>
+    <p class="muted" style="max-width: 70ch; margin: 0 auto">
+      The codes live in the <span class="code-pill">support_errorcode</span> table and are served by
+      <span class="code-pill">/api/error-codes/</span>. Every error page reads its wording from that same row
+      (<span class="code-pill">myproject/errors.py</span>), so the reference page and the page you land on can
+      never disagree, and support staff can reword an error in the Django admin without a deploy. The
+      handlers are <span class="code-pill">handler400</span>, <span class="code-pill">handler403</span>,
+      <span class="code-pill">handler404</span> and <span class="code-pill">handler500</span> in
+      <span class="code-pill">myproject/urls.py</span>.
+    </p>
+    <div class="row mt-2" style="justify-content:center; flex-wrap: wrap">
+      <a class="btn btn-primary" href="{% url 'support:error_codes' %}">The error code reference</a>
+      <a class="btn btn-outline" href="{% url 'api:error_codes' %}">The JSON API</a>
+    </div>
+  </div>
+</section>
+{% if run_net_test %}<span hidden data-net-test-auto></span>{% endif %}
+{% endblock %}

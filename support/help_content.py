@@ -116,6 +116,35 @@ ERROR_CODES = [
     ('AI-429', 'Too many messages', 'assistant', 429,
      'You sent more chat messages in a minute than the assistant allows.',
      'Wait a minute and send your message again.', ''),
+    ('WEB-405', 'That action is not allowed here', 'website', 405,
+     'The page was asked to do something it does not support, for example opening a form submission as a link.',
+     'Go back to the page and use its buttons instead of the address bar.', ''),
+    ('WEB-408', 'The request timed out', 'website', 408,
+     'Your request took too long to reach us, usually because the connection dropped halfway.',
+     'Check your connection and try again. On a slow network, give the page a few more seconds.', ''),
+    ('WEB-413', 'That file is too large', 'website', 413,
+     'A photo you attached to a ticket is bigger than the upload limit.',
+     'Attach a photo under 5 MB, or send a smaller screenshot instead.', 'other'),
+    ('WEB-429', 'Too many requests', 'website', 429,
+     'Too many requests came from your connection in a short time, so we slowed it down to keep the store fast '
+     'for everyone.',
+     'Wait a minute and try again. If you were not refreshing quickly, raise a ticket.', 'other'),
+    ('WEB-502', 'Bad gateway', 'website', 502,
+     'The server that runs the store gave our network an invalid reply, usually during a deployment or a '
+     'restart.',
+     'Wait about a minute and reload the page. The live status is at /health/.', 'other'),
+    ('WEB-504', 'Gateway timed out', 'website', 504,
+     'The store took too long to answer, so the network in front of it gave up waiting.',
+     'Reload the page in a minute. If it keeps happening, raise a ticket with the time it happened.', 'other'),
+    ('NET-001', 'No internet connection', 'network', None,
+     'Your device is offline, so the page could not be loaded from the store at all.',
+     'Check your Wi-Fi or mobile data and reload. Your bag is kept on this device until you are back online.',
+     ''),
+    ('NET-002', 'Could not reach the store', 'network', None,
+     'Your device is online but the request did not get through, for example on a captive Wi-Fi network or '
+     'while the connection is dropping in and out.',
+     'Try again in a moment. If other sites work and this one does not, check /health/ or raise a ticket.',
+     'other'),
 ]
 
 

@@ -16,13 +16,55 @@ support tickets. Support agents and administrators work from a dashboard.
 |---|---|
 | Responsive website, 3+ pages, chat widget on every page | Home, products, product page, bag, checkout, orders, help center, FAQ, error codes, tickets. Works down to phone width. The chat widget (`templates/assistant/widget.html`) is in the base layout, so it is on every page, including the error pages. |
 | 10+ FAQs stored in SQL and shown on the FAQ page | `support.FAQ` table (14 FAQs, editable in Django admin). `/support/faq/` loads them from `GET /api/faqs/`. |
-| 8+ error codes (400, 401, 403, 404, 429, 500, 503 + site-specific) | `support.ErrorCode` table, 16 codes: `WEB-400`, `WEB-401`, `WEB-403`, `WEB-404`, `AI-429`, `WEB-500`, `WEB-503` plus site-specific payment and checkout codes (`PAY-001`..`PAY-005`, `ORD-001`..`ORD-004`). Listed at `/support/error-codes/` and `GET /api/error-codes/`, shown where they happen (payments, checkout, error pages, API errors, chat limit). |
-| Custom 404 and 500 pages with "Ask the assistant" | `templates/404.html`, `templates/500.html` (`myproject/views.py`, with a plain fallback page if even that fails), plus custom 400 and 403 pages |
+| 8+ error codes (400, 401, 403, 404, 429, 500, 503 + site-specific) | `support.ErrorCode` table, **24 codes**. HTTP: `WEB-400`, `WEB-401`, `WEB-403`, `WEB-404`, `WEB-405`, `WEB-408`, `WEB-413`, `WEB-429`, `WEB-500`, `WEB-502` (bad gateway), `WEB-503`, `WEB-504`. Connection: `NET-001` (no internet), `NET-002` (request did not reach the store). Site-specific: `PAY-001`..`PAY-005`, `ORD-001`..`ORD-004`, `AI-429`. Listed at `/support/error-codes/` and `GET /api/error-codes/`, and every one can be triggered from [the demonstration page](#seeing-every-error-code-for-yourself). |
+| Custom 404 and 500 pages with "Ask the assistant" | `templates/404.html`, `templates/400.html`, `templates/403.html`, `templates/500.html` — all four extend one page (`templates/errors/code.html`) whose wording is read from the `ErrorCode` row, so the reference page and the page you land on can never disagree. Handlers in `myproject/views.py`, rendering in `myproject/errors.py`, with a plain fallback page if even the template fails. Plus `NET-001` at `/offline/` when the device has no internet. |
 | Assistant answers from the FAQs, explains error codes, creates a ticket when it can't answer | `assistant/fallback.py` + `support/lookup.py` (FAQ matching; codes like `PAY-001` or "error 404"); LLMs get `search_faqs` and `explain_error_code` tools. Unanswered questions become a ticket via `support.services.escalate_from_assistant`. |
 | Support tickets in SQL; chat logs and feedback in MongoDB | Tickets: `support.Ticket` (Postgres on the live site), with a CRUD API at `/api/tickets/`. Chats and feedback (👍/👎, ticket ratings): MongoDB collections `chats` and `feedback` via `myproject/mongo.py` (`MONGODB_URI`). |
 | API keys in environment variables, nothing confidential in GitHub | All keys come from environment variables (Vercel) or the git-ignored `.env`; see `.env.example`. Production refuses to start without `DJANGO_SECRET_KEY`. `manage.py check --deploy` passes: HTTPS redirect, HSTS, secure cookies, and a nonce-based Content Security Policy. |
 | Request logging, health check, third-party API with a time limit and fallback | `myproject/observability.py`: one JSON log line per request with an `X-Request-ID`; `GET /health/`. India Post PIN code API (`orders/delivery.py`): 3-second timeout, cached, falls back to a local estimate. The LLM call also has a timeout and falls back to the rule-based assistant. Dashboard → Feedback shows 👍/👎 rates, unhelpful replies, ticket ratings and unanswered questions. |
 | README with the live link and one proposed improvement | Live link above; improvements at the end of this file. |
+
+## Seeing every error code for yourself
+
+**[/support/error-codes/simulate/](https://mj-shoppingapp.vercel.app/support/error-codes/simulate/)** lists all
+24 codes with a button that triggers each one. Nothing there is a screenshot or a mock-up:
+
+- **Show the page** calls `myproject.errors.error_page()` — the same function `handler400` … `handler500`
+  call — so you get the real page, the real HTTP status and the real JSON log line.
+- **Raise it for real** (`WEB-403`, `WEB-404`, `WEB-500`) raises the actual `PermissionDenied`, `Http404` or
+  unhandled exception, so Django's own handler chain runs.
+- **Where it happens** links to the place in the store that produces the code on its own (a declined test
+  card, an empty bag, the staff dashboard as a customer, a bad PIN code…).
+- The buttons are rate limited to 30 a minute, so clicking quickly demonstrates `WEB-429` too.
+
+Set `ERROR_SIMULATOR=0` to hide the page on a store taking real orders.
+
+Error pages only replace Django's yellow debug screen when `DEBUG` is off, so to see them locally:
+
+```bash
+DJANGO_DEBUG=0 DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost DJANGO_SECRET_KEY=local-dev-key \
+  python3 manage.py runserver 127.0.0.1:8111
+```
+
+(`.claude/launch.json` has this as the `mj-errors` configuration.)
+
+### No internet: NET-001 and NET-002
+
+Opening the site with no connection normally shows the browser's own "no internet" screen, which tells the
+customer nothing. A service worker (`static/js/sw.js`, served from the site root by
+`myproject.views.service_worker` so its scope is every page) answers instead with the store's own
+**`NET-001`** page at `/offline/`: it names the code, links to the code reference and reloads itself the
+moment the connection is back. The page is deliberately self-contained — no stylesheet, no Google font, no
+icon font — because it is served from the cache with no network at all.
+
+Pages themselves are never served stale: a store showing yesterday's prices, stock or bag offline would be
+worse than saying "you are offline", so only `/offline/` and the static files are cached. Requests that fail
+while the device is still online (patchy Wi-Fi, captive networks) show **`NET-002`** as a banner on the page
+you are on, from one place in `static/js/app.js`.
+
+**Try it:** open the site, then turn off Wi-Fi and reload. (The service worker needs HTTPS or `localhost`, so
+it works on the live site and on `127.0.0.1`, and the browser must have visited the site once before to have
+the page saved.)
 
 ## Quick start
 
@@ -88,7 +130,8 @@ price, rating, discount, stock) with counts, sorting, product galleries with zoo
 wishlist, recently viewed, PIN code delivery estimate, AJAX add-to-cart, "Buy now", price breakdown with
 savings, three-step checkout with UPI or card, order confirmation and a delivery tracker.
 
-**Support**: help center with searchable FAQs (from the API), an error code reference, a guided "raise a ticket" wizard (issue → order → details and photos),
+**Support**: help center with searchable FAQs (from the API), an error code reference and a page that triggers
+each code for real, a guided "raise a ticket" wizard (issue → order → details and photos),
 ticket IDs like `TKT-000123`, auto-assignment to the least busy agent, priorities, first-reply deadlines
 (4 hours for payment and delivery problems, 24 hours otherwise), conversation threads with photos, internal
 notes, canned replies, satisfaction ratings and email notifications (printed to the console in development).
@@ -140,7 +183,10 @@ latest requests.
 | `/api/tickets/` | GET, POST | Your tickets (agents see all); create with `{"category", "subject", "description", "order_number"}` |
 | `/api/tickets/<code>/` | GET, PATCH, DELETE | Read with messages; edit `subject`/`description` while open, add a `message`, set `status`; delete a ticket nobody has answered yet |
 | `/api/pincode/<pin>/` | GET | City, state and delivery date for a PIN code |
-| `/health/` | GET | `200` with database, MongoDB and assistant status, `503` if the database is down |
+| `/health/` | GET | `200` with database, MongoDB and assistant status, `503` with code `WEB-503` if the database is down |
+| `/offline/` | GET | The `NET-001` page the service worker shows with no internet |
+| `/sw.js` | GET | The service worker, served from the root with `Service-Worker-Allowed: /` |
+| `/support/error-codes/simulate/<code>/` | GET | Triggers that code's real error path; `?raise=1` raises the real exception for `WEB-403`, `WEB-404` and `WEB-500` |
 
 Ticket endpoints use the logged-in session; send the CSRF token in an `X-CSRFToken` header for POST, PATCH and
 DELETE.
@@ -236,6 +282,7 @@ In Vercel → Project → Settings → Environment Variables, set:
 | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | Gmail address and App Password, to send real emails |
 | `ORDER_ALERT_EMAILS`, `TICKET_ALERT_EMAILS` | Who gets "New order" and "New ticket" emails (ticket alerts default to the order list) |
 | `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | Only for a custom domain: `shop.example.com` and `https://shop.example.com` |
+| `ERROR_SIMULATOR` | Optional: `0` hides `/support/error-codes/simulate/`. On by default. |
 
 **Without `DATABASE_URL`** the site runs on a demo copy of the store (`deploy/demo.sqlite3`, copied to `/tmp`
 when an instance starts). Every Vercel instance gets its own copy, so sign-ins, sign-ups and tickets are not

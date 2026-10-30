@@ -9,14 +9,11 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET, require_http_methods
 
+from myproject.errors import STATUS_CODES  # Error code per HTTP status, shared with the error pages.
 from orders.models import Order
 
 from . import lookup, services
 from .models import FAQ, ErrorCode, Ticket
-
-
-# Error code (see /support/error-codes/) for each HTTP status the API returns.
-STATUS_CODES = {400: 'WEB-400', 401: 'WEB-401', 403: 'WEB-403', 404: 'WEB-404'}
 
 
 def _error(message, status):

@@ -27,7 +27,10 @@ def _orders_with_items():
 def pincode(request, pin):
     """Delivery estimate and city for a PIN code (India Post, with a local fallback)."""
     result = delivery.lookup(pin)
-    return JsonResponse(result, status=200 if result['valid'] else 400)
+    if result['valid']:
+        return JsonResponse(result)
+    # WEB-400: the same code the error pages and the rest of the API use for a bad request.
+    return JsonResponse({**result, 'code': 'WEB-400'}, status=400)
 
 
 @login_required

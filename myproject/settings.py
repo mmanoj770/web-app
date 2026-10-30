@@ -96,6 +96,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 MIDDLEWARE = [
     'myproject.observability.RequestLogMiddleware',
+    'myproject.errors.ErrorPageMiddleware',
     'assistant.middleware.VercelOidcMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -117,6 +118,7 @@ SECURE_CSP = {
     'font-src': [CSP.SELF, 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'],
     'img-src': [CSP.SELF, 'data:'],
     'connect-src': [CSP.SELF],
+    'worker-src': [CSP.SELF],  # The offline service worker (/sw.js).
     'object-src': [CSP.NONE],
     'base-uri': [CSP.SELF],
     'form-action': [CSP.SELF],
@@ -227,7 +229,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Bumped when CSS/JS change so browsers fetch the new files instead of cached ones.
-ASSET_VERSION = '5.3'
+ASSET_VERSION = '5.4'
 # WhiteNoise serves static files in production straight from the app folders, so no
 # collectstatic step is needed; ASSET_VERSION query strings handle cache busting.
 WHITENOISE_USE_FINDERS = True
@@ -256,6 +258,11 @@ CURRENCY_SYMBOL = '₹'
 STORE_THEME = os.environ.get('STORE_THEME', 'mj')
 SUPPORT_EMAIL = 'support@mj.local'
 DEFAULT_FROM_EMAIL = SUPPORT_EMAIL
+
+# The error-code demonstration page at /support/error-codes/simulate/ (see support/simulate.py).
+# It triggers the store's real error paths on purpose, so a reviewer can see each code's page,
+# status and log line. Set ERROR_SIMULATOR=0 to hide it on a store taking real orders.
+ERROR_SIMULATOR = os.environ.get('ERROR_SIMULATOR', '1') == '1'
 
 
 # AI shopping assistant (see assistant/providers.py)

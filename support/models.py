@@ -158,6 +158,7 @@ class ErrorCode(models.Model):
         PAYMENTS = 'payments', 'Payments'
         ORDERS = 'orders', 'Orders & checkout'
         WEBSITE = 'website', 'Website'
+        NETWORK = 'network', 'Network & connection'
         ASSISTANT = 'assistant', 'AI assistant'
         SUPPORT = 'support', 'Support tickets'
 

@@ -51,7 +51,11 @@ class AssistantHelpTests(TestCase):
 
     def test_explains_http_status_codes(self):
         for message, title in (('what does error 404 mean?', 'Page not found'), ('I got a 503', 'Service unavailable'),
-                               ('401', 'Sign-in required'), ('429 too many requests', 'Too many messages')):
+                               ('401', 'Sign-in required'), ('502 bad gateway', 'Bad gateway'),
+                               # A bare status gets the site-wide WEB- code: AI-429 is the chat's own limit.
+                               ('429 too many requests', 'Too many requests'),
+                               ('what is AI-429?', 'Too many messages'),
+                               ('NET-001', 'No internet connection')):
             self.assertIn(title, fallback.reply(message, self.user)['reply'])
         # Prices are not error codes.
         self.assertNotIn('Page not found', fallback.reply('headphones under 500', self.user)['reply'])

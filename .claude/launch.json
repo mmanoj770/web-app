@@ -1,0 +1,20 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mj-errors",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "DJANGO_DEBUG=0 DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost DJANGO_SECRET_KEY=local-review-only-key-0123456789abcdefghijklmnop python3 manage.py runserver 127.0.0.1:8111 --noreload"
+      ],
+      "port": 8111
+    },
+    {
+      "name": "mj-dev",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["manage.py", "runserver", "127.0.0.1:8000"],
+      "port": 8000
+    }
+  ]
+}

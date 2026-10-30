@@ -1,13 +1,4 @@
-{% extends "base.html" %}
-{% block title %}Something went wrong · {{ STORE_NAME }}{% endblock %}
-{% block content %}
-<div class="card empty">
-  <i class="bi bi-cone-striped"></i>
-  <h2>Something went wrong on our side</h2>
-  <p class="muted">Error <a class="code-pill" href="{% url 'support:error_codes' %}#WEB-500">WEB-500</a>: the server hit an unexpected error. It has been logged for our team{% if request.request_id %} (reference <span class="code-pill">{{ request.request_id }}</span>){% endif %}. Please try again in a minute.</p>
-  <div class="row" style="justify-content:center; flex-wrap: wrap">
-    <a class="btn btn-primary" href="{% url 'catalog:home' %}">Back to the store</a>
-    <button class="btn btn-white" type="button" data-ask="I got error WEB-500. What should I do?"><i class="bi bi-stars"></i> Ask the assistant</button>
-  </div>
-</div>
-{% endblock %}
+{% extends "errors/code.html" %}
+{% comment %}handler500 (myproject.views.server_error) → WEB-500. If even this can't render (for example the
+   database is down), myproject.errors.plain_page() returns a page with no template at all.{% endcomment %}
+{% block headline %}Something went wrong on our side{% endblock %}

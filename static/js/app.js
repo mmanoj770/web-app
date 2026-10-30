@@ -49,12 +49,19 @@
 
   /* ---------- Fetch helper ---------- */
   async function post(url, data) {
-    const res = await fetch(url, {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'X-CSRFToken': csrf(), Accept: 'application/json' },
-      body: data,
-    });
+    let res;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'X-CSRFToken': csrf(), Accept: 'application/json' },
+        body: data,
+      });
+    } catch (err) {
+      // The request never reached the store: NET-001 if the device is offline, NET-002 otherwise.
+      const code = netError(err);
+      return { ok: false, status: 0, data: { error: `Could not reach the store (${code}).`, code } };
+    }
     let json = {};
     try { json = await res.json(); } catch (e) { /* non-JSON response */ }
     return { ok: res.ok, status: res.status, data: json };
@@ -643,6 +650,71 @@
     const msg = e.target.dataset && e.target.dataset.confirm;
     if (msg && !window.confirm(msg)) e.preventDefault();
   }, true);
+
+  /* ---------- Connection: NET-001 (offline) and NET-002 (request failed) ---------- */
+  /* The service worker is what turns "no internet" into the store's own NET-001 page instead of
+     the browser's default screen. It is registered from here, and served from the site root by
+     myproject.views.service_worker so its scope covers every page. */
+  function setSwStatus(text) { $$('[data-sw-status]').forEach((el) => { el.textContent = text; }); }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .then((reg) => setSwStatus(`Service worker registered for ${reg.scope} — the offline page (NET-001) is saved on this device.`))
+        .catch((err) => setSwStatus(`Service worker could not be registered (${err.message}). It needs HTTPS or localhost.`));
+    });
+  } else {
+    setSwStatus('This browser does not support service workers, so the offline page cannot be stored.');
+  }
+
+  let netBanner = null;
+  function showNetBanner(code, message) {
+    if (!netBanner) {
+      netBanner = document.createElement('div');
+      netBanner.className = 'net-banner';
+      netBanner.setAttribute('role', 'status');
+      netBanner.setAttribute('aria-live', 'polite');
+      document.body.appendChild(netBanner);
+    }
+    netBanner.innerHTML = `<i class="bi bi-${code === 'NET-001' ? 'wifi-off' : 'cloud-slash'}"></i>`
+      + `<span><strong>${escapeHtml(code)}</strong> &middot; ${escapeHtml(message)}</span>`
+      + `<a href="/support/error-codes/#${encodeURIComponent(code)}">What this means</a>`
+      + '<button type="button" aria-label="Dismiss"><i class="bi bi-x"></i></button>';
+    netBanner.querySelector('button').addEventListener('click', hideNetBanner);
+    netBanner.classList.add('show');
+  }
+  function hideNetBanner() { if (netBanner) netBanner.classList.remove('show'); }
+
+  // Called from every fetch failure in this file, so one place decides which code applies.
+  function netError() {
+    const code = navigator.onLine ? 'NET-002' : 'NET-001';
+    showNetBanner(code, navigator.onLine
+      ? 'That request could not reach the store. Check your connection and try again.'
+      : 'You are offline. Anything you open now will show the offline page.');
+    return code;
+  }
+  window.netError = netError;
+
+  window.addEventListener('offline', () => showNetBanner('NET-001',
+    'You are offline. Anything you open now will show the offline page.'));
+  window.addEventListener('online', () => { hideNetBanner(); toast('Back online', { type: 'success' }); });
+  if (!navigator.onLine) netError();
+
+  /* The NET-002 demonstration on /support/error-codes/simulate/: a real request with a 1 ms
+     deadline, so it fails the same way a dropped connection does and takes the same code path. */
+  async function runNetTest(button) {
+    const label = button ? button.textContent : '';
+    if (button) { button.disabled = true; button.textContent = 'Trying…'; }
+    try {
+      await fetch('/api/error-codes/', { signal: AbortSignal.timeout(1), cache: 'no-store' });
+      toast('That request beat the 1 ms deadline. Try again, or turn off Wi-Fi for NET-001.', { type: 'info' });
+    } catch (err) {
+      netError(err);
+    }
+    if (button) { button.disabled = false; button.textContent = label; }
+  }
+  $$('[data-net-test]').forEach((button) => button.addEventListener('click', () => runNetTest(button)));
+  if ($('[data-net-test-auto]')) runNetTest(null);
 
   /* ---------- Reveal on scroll ---------- */
   const reveals = $$('.reveal');

@@ -57,8 +57,9 @@ class ErrorPageTests(TestCase):
         self.assertContains(response, 'Ask the assistant', status_code=500)
 
     def test_500_falls_back_to_plain_page(self):
-        with mock.patch('myproject.views.render', side_effect=Exception('template broke')), \
-                self.assertLogs('myproject.views', 'ERROR'):
+        # The pages are rendered by myproject.errors now; myproject.views only wires up the handlers.
+        with mock.patch('myproject.errors.render', side_effect=Exception('template broke')), \
+                self.assertLogs('myproject.errors', 'ERROR'):
             response = views.server_error(RequestFactory().get('/'))
         self.assertContains(response, 'WEB-500', status_code=500)
         self.assertContains(response, '/support/?ask=WEB-500', status_code=500)

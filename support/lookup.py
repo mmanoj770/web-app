@@ -5,12 +5,13 @@ import re
 from .models import FAQ, ErrorCode
 
 WORD_RE = re.compile(r'[a-z0-9]+')
-ERROR_CODE_RE = re.compile(r'\b(PAY|ORD|WEB|AI|TKT)[\s-]?(\d{3})\b', re.IGNORECASE)
+ERROR_CODE_RE = re.compile(r'\b(PAY|ORD|WEB|NET|AI|TKT)[\s-]?(\d{3})\b', re.IGNORECASE)
 # A bare HTTP status ("error 404", "got a 503", "429 too many requests"), but not "laptop under 500".
 HTTP_STATUS_RE = re.compile(
     r'(?:\b(?:error|code|status|http|got|getting|seeing|shows?|showing)\b\D{0,12}\b([45]\d\d)\b'
     r'|\b([45]\d\d)\b\s*(?:error|code|status|page|bad request|unauthori[sz]ed|forbidden|not found'
-    r'|too many|internal|service unavailable)|^\s*([45]\d\d)\s*\??\s*$)',
+    r'|too many|internal|service unavailable|bad gateway|gateway|time ?out|timed out|too large'
+    r'|not allowed|unavailable)|^\s*([45]\d\d)\s*\??\s*$)',
     re.IGNORECASE,
 )
 IGNORE = {

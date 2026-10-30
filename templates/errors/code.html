@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% comment %}The one error page for the whole site. Its wording comes from the ErrorCode table via
+   myproject/errors.py, so /support/error-codes/ and the page a customer lands on always agree.
+   400.html, 403.html, 404.html and 500.html extend this and only change the headline.{% endcomment %}
+{% block title %}{{ error.title|default:"Something went wrong" }} · {{ STORE_NAME }}{% endblock %}
+{% block content %}
+<div class="card empty">
+  <i class="bi bi-{{ icon|default:"exclamation-triangle" }}"></i>
+  <h2>{% block headline %}{{ error.title|default:"Something went wrong" }}{% endblock %}</h2>
+  <p class="muted">
+    Error <a class="code-pill" href="{% url 'support:error_codes' %}#{{ error_code }}">{{ error_code }}</a>{% if http_status %} · HTTP {{ http_status }}{% endif %}{% if error.meaning %}: {{ error.meaning }}{% endif %}
+    {% if request.request_id %}<br><span class="xsmall">Reference <span class="code-pill">{{ request.request_id }}</span> — quote this if you raise a ticket.</span>{% endif %}
+  </p>
+  {% if error.resolution %}<p><strong>What to do:</strong> {{ error.resolution }}</p>{% endif %}
+  {% if detail %}<p class="xsmall muted">{{ detail }}</p>{% endif %}
+  <div class="row" style="justify-content:center; flex-wrap: wrap">
+    <a class="btn btn-primary" href="{% url 'catalog:home' %}">Back to the store</a>
+    <button class="btn btn-white" type="button" data-ask="What does error {{ error_code }} mean?"><i class="bi bi-stars"></i> Ask the assistant</button>
+    {% if error.ticket_category %}<a class="btn btn-outline" href="{% url 'support:create' %}?category={{ error.ticket_category }}">Raise a ticket</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

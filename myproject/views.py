@@ -1,42 +1,62 @@
-import logging
+"""Site-wide views: the custom error pages, the offline page and the service worker.
 
-from django.http import HttpResponseBadRequest, HttpResponseServerError
+The error handlers are wired up in myproject/urls.py (handler400 ... handler500). They all go
+through myproject.errors.error_page(), which reads each code's wording from the ErrorCode table.
+"""
+from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import render
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_GET
 
-logger = logging.getLogger(__name__)
-
-# Shown if even the styled error page can't be rendered (e.g. the database is down).
-PLAIN_500 = """<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>Something went wrong · MJ</title>
-<style>body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;background:#f4f4f2;color:#1a1a1a;
-display:grid;place-items:center;min-height:100vh;margin:0;padding:16px}main{max-width:460px;text-align:center}
-a{display:inline-block;margin:6px;padding:12px 20px;background:#1a1a1a;color:#fff;text-decoration:none;
-font-weight:700;letter-spacing:1px;text-transform:uppercase;font-size:13px}a.alt{background:#c9a24a;color:#1a1a1a}
-code{background:#fff;padding:2px 6px}</style></head><body><main><h1>Something went wrong</h1>
-<p>Error <code>WEB-500</code>: the server hit an unexpected error. It has been logged for our team.
-Please try again in a minute.</p><a href="/">Back to the store</a>
-<a class="alt" href="/support/?ask=WEB-500">Ask the assistant</a></main></body></html>"""
-
-
-def server_error(request):
-    """Custom 500 page with the site layout and the assistant, or a plain page if that fails too."""
-    try:
-        return render(request, '500.html', {'error_code': 'WEB-500'}, status=500)
-    except Exception:
-        logger.exception('Could not render the 500 page')
-        return HttpResponseServerError(PLAIN_500)
+from .errors import describe, error_page
 
 
 def bad_request(request, exception=None):
-    try:
-        return render(request, '400.html', {'error_code': 'WEB-400'}, status=400)
-    except Exception:  # e.g. a request with an invalid Host header
-        return HttpResponseBadRequest('Bad request (error WEB-400). Please go back and try again.')
+    """handler400: WEB-400, e.g. a malformed request or an invalid Host header."""
+    return error_page(request, 400)
 
 
 def permission_denied(request, exception=None):
-    return render(request, '403.html', {'error_code': 'WEB-403'}, status=403)
+    """handler403: WEB-403, raised by PermissionDenied and the staff-only decorators."""
+    return error_page(request, 403)
 
 
 def page_not_found(request, exception=None):
-    return render(request, '404.html', {'error_code': 'WEB-404'}, status=404)
+    """handler404: WEB-404, raised by Http404 and by get_object_or_404()."""
+    return error_page(request, 404)
+
+
+def server_error(request):
+    """handler500: WEB-500, for any unhandled exception. Must not assume the database works."""
+    return error_page(request, 500)
+
+
+@require_GET
+def offline(request):
+    """NET-001: the page the service worker shows when the device has no internet.
+
+    It is served from the service worker's cache with no network at all, so it cannot rely on the
+    stylesheet, the Google font or the icon font being cached as well: everything it needs is
+    inline in the template.
+    """
+    return render(request, 'offline.html', {
+        'error_code': 'NET-001', 'error': describe('NET-001'), 'offline_codes': [
+            describe('NET-001'), describe('NET-002'),
+        ],
+    })
+
+
+@never_cache
+@require_GET
+def service_worker(request):
+    """Serve static/js/sw.js from the site root.
+
+    A service worker can only control pages at or below its own URL, so the copy at
+    /static/js/sw.js would only cover /static/js/. Serving the same file here, with
+    Service-Worker-Allowed, gives it the whole site.
+    """
+    source = settings.BASE_DIR / 'static' / 'js' / 'sw.js'
+    response = HttpResponse(source.read_bytes(), content_type='text/javascript')
+    response['Service-Worker-Allowed'] = '/'
+    return response

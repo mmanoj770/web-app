@@ -27,7 +27,8 @@ class MultipleImageField(forms.ImageField):
         cleaned = [super(MultipleImageField, self).clean(f, initial) for f in files]
         for f in cleaned:
             if f.size > MAX_ATTACHMENT_BYTES:
-                raise forms.ValidationError(f'{f.name} is larger than 5 MB.')
+                # WEB-413: see /support/error-codes/#WEB-413.
+                raise forms.ValidationError(f'{f.name} is larger than 5 MB (error WEB-413).')
         return cleaned
 
 

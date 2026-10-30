@@ -6,7 +6,7 @@ from django.views.static import serve
 from orders import views as order_views
 from support import api as support_api
 
-from . import observability
+from . import observability, views as site_views
 
 admin.site.site_header = f'{settings.STORE_NAME} administration'
 admin.site.site_title = settings.STORE_NAME
@@ -24,6 +24,9 @@ api_urlpatterns = [
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', observability.health, name='health'),
+    # NET-001: the offline page and the service worker that shows it (see static/js/sw.js).
+    path('offline/', site_views.offline, name='offline'),
+    path('sw.js', site_views.service_worker, name='service_worker'),
     path('api/', include((api_urlpatterns, 'api'))),
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('django.contrib.auth.urls')),

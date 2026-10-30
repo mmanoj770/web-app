@@ -945,3 +945,20 @@ summary.btn::-webkit-details-marker { display: none; }
 :root[data-theme="mj"] .ai-form textarea { border-radius: 4px; }
 :root[data-theme="mj"] .ai-chips button { border-radius: 14px; }
 :root[data-theme="mj"] .table th { letter-spacing: .1em; }
+
+/* ---------------------------------------------------------------------------
+   Connection banner: NET-001 (the device is offline) and NET-002 (a request
+   did not reach the store). Sits under the header on every page.
+   --------------------------------------------------------------------------- */
+.net-banner {
+  position: fixed; left: 50%; top: calc(var(--header-h) + 10px); transform: translateX(-50%) translateY(-14px);
+  z-index: 2100; display: none; align-items: center; gap: 12px; width: min(94vw, 620px);
+  padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface); color: var(--text); box-shadow: var(--shadow-lg); font-size: 14px;
+  opacity: 0; transition: opacity .25s var(--ease), transform .25s var(--spring);
+}
+.net-banner.show { display: flex; opacity: 1; transform: translateX(-50%) translateY(0); }
+.net-banner .bi { font-size: 20px; color: var(--red); flex: none; }
+.net-banner strong { letter-spacing: .5px; }
+.net-banner a { margin-left: auto; color: var(--link); font-weight: 600; white-space: nowrap; }
+.net-banner button { background: none; border: 0; color: var(--text-3); cursor: pointer; font-size: 16px; flex: none; }
