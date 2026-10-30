@@ -106,8 +106,8 @@ Connect a real LLM by setting **one** API key before `runserver`; the store pick
 |----------|-------------|
 | Anthropic Claude | `export ANTHROPIC_API_KEY=sk-ant-...` (default model `claude-opus-5-5`) |
 | OpenAI | `export OPENAI_API_KEY=sk-...` |
-| Google Gemini | `export GEMINI_API_KEY=...` |
-| Groq | `export GROQ_API_KEY=...` |
+| Google Gemini | `export GEMINI_API_KEY=...` (free tier, no credit card) |
+| Groq | `export GROQ_API_KEY=...` (free tier, no credit card; default model `llama-3.3-70b-versatile`) |
 | OpenRouter | `export OPENROUTER_API_KEY=...` |
 | Vercel AI Gateway | Nothing on Vercel: it authenticates with the deployment's OIDC token (add a card under Vercel → AI Gateway to unlock the free credits). Elsewhere: `AI_GATEWAY_API_KEY`. Default model `anthropic/claude-haiku-5.5`. |
 | Ollama (free, runs on your Mac) | `ollama pull llama3.2 && ollama serve`, then `export LLM_PROVIDER=ollama` |

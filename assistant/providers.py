@@ -123,10 +123,14 @@ def resolve():
     if name == 'none':
         return None
     if name == 'auto':
-        if anthropic_has_credentials():
+        # Skip a provider that is paused (it just rejected our credentials) and try the next one,
+        # so one bad key means instant answers from the next provider rather than a failed call
+        # on every message. Naming a provider explicitly still forces it, pause or not.
+        if anthropic_has_credentials() and not paused('anthropic'):
             name = 'anthropic'
         else:
-            name = next((p for p in AUTO_ORDER if os.environ.get(OPENAI_COMPATIBLE[p][1])), None)
+            name = next((p for p in AUTO_ORDER
+                         if os.environ.get(OPENAI_COMPATIBLE[p][1]) and not paused(p)), None)
             if name is None and gateway_token() and not paused('gateway'):
                 base_url, _key_var, default_model = OPENAI_COMPATIBLE['gateway']
                 return ProviderConfig('gateway', settings.LLM_MODEL or default_model, gateway_token(), base_url)

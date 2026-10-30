@@ -304,6 +304,29 @@ class ProviderSelectionTests(SimpleTestCase):
         self.assertEqual(config.api_key, 'g')
         self.assertIn('groq.com', config.base_url)
 
+    def test_auto_skips_a_paused_provider(self):
+        """A key the provider rejects must not be retried on every message."""
+        cache.clear()
+        self.addCleanup(cache.clear)
+        providers.pause('groq', 'groq returned HTTP 401: invalid api key')
+        # It falls through to the next provider that has a key...
+        self.assertEqual(self.resolve({'GROQ_API_KEY': 'g', 'OPENROUTER_API_KEY': 'o'}).name, 'openrouter')
+        # ...and to the rule-based assistant when it was the only one.
+        self.assertIsNone(self.resolve({'GROQ_API_KEY': 'g'}))
+
+    def test_auto_skips_paused_anthropic(self):
+        cache.clear()
+        self.addCleanup(cache.clear)
+        providers.pause('anthropic', 'anthropic returned HTTP 400: credit balance too low')
+        self.assertEqual(self.resolve({'ANTHROPIC_API_KEY': 'a', 'GROQ_API_KEY': 'g'}).name, 'groq')
+
+    def test_an_explicitly_named_provider_is_used_even_when_paused(self):
+        """LLM_PROVIDER=groq means groq: the pause only steers "auto"."""
+        cache.clear()
+        self.addCleanup(cache.clear)
+        providers.pause('groq', 'groq returned HTTP 401')
+        self.assertEqual(self.resolve({'GROQ_API_KEY': 'g'}, LLM_PROVIDER='groq').name, 'groq')
+
     def test_explicit_provider_and_model(self):
         config = self.resolve({'GEMINI_API_KEY': 'k'}, LLM_PROVIDER='gemini', LLM_MODEL='gemini-x')
         self.assertEqual((config.name, config.model), ('gemini', 'gemini-x'))
