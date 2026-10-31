@@ -26,11 +26,13 @@ logger = logging.getLogger(__name__)
 ANTHROPIC_DEFAULT_MODEL = 'claude-opus-5-5'
 
 # OpenAI-compatible chat completion APIs: (base URL, API key env var, default model).
-# Model names change often; set LLM_MODEL to override the default.
+# Providers retire models often (Groq dropped llama-3.3-70b-versatile in August 2026 and Google
+# dropped gemini-2.0-flash in June 2026), so check the provider's model list and set LLM_MODEL if
+# a call comes back with an unknown-model error. /health/ shows the error under "assistant".
 OPENAI_COMPATIBLE = {
     'openai': ('https://api.openai.com/v1', 'OPENAI_API_KEY', 'gpt-4o-mini'),
-    'gemini': ('https://generativelanguage.googleapis.com/v1beta/openai', 'GEMINI_API_KEY', 'gemini-2.0-flash'),
-    'groq': ('https://api.groq.com/openai/v1', 'GROQ_API_KEY', 'llama-3.3-70b-versatile'),
+    'gemini': ('https://generativelanguage.googleapis.com/v1beta/openai', 'GEMINI_API_KEY', 'gemini-3.8-flash'),
+    'groq': ('https://api.groq.com/openai/v1', 'GROQ_API_KEY', 'openai/gpt-oss-120b'),
     'openrouter': ('https://openrouter.ai/api/v1', 'OPENROUTER_API_KEY', 'openai/gpt-4o-mini'),
     'gateway': ('https://ai-gateway.vercel.sh/v1', 'AI_GATEWAY_API_KEY', 'anthropic/claude-haiku-5.5'),
     'ollama': ('http://localhost:11434/v1', '', 'llama3.2'),

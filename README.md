@@ -106,14 +106,14 @@ Connect a real LLM by setting **one** API key before `runserver`; the store pick
 |----------|-------------|
 | Anthropic Claude | `export ANTHROPIC_API_KEY=sk-ant-...` (default model `claude-opus-5-5`) |
 | OpenAI | `export OPENAI_API_KEY=sk-...` |
-| Google Gemini | `export GEMINI_API_KEY=...` (free tier, no credit card) |
-| Groq | `export GROQ_API_KEY=...` (free tier, no credit card; default model `llama-3.3-70b-versatile`) |
+| Google Gemini | `export GEMINI_API_KEY=...` (free tier, no credit card; default model `gemini-3.8-flash`) |
+| Groq | `export GROQ_API_KEY=...` (free tier, no credit card; default model `openai/gpt-oss-120b`) |
 | OpenRouter | `export OPENROUTER_API_KEY=...` |
 | Vercel AI Gateway | Nothing on Vercel: it authenticates with the deployment's OIDC token (add a card under Vercel → AI Gateway to unlock the free credits). Elsewhere: `AI_GATEWAY_API_KEY`. Default model `anthropic/claude-haiku-5.5`. |
 | Ollama (free, runs on your Mac) | `ollama pull llama3.2 && ollama serve`, then `export LLM_PROVIDER=ollama` |
 
 Optional settings: `LLM_PROVIDER` (`auto`, `anthropic`, `openai`, `gemini`, `groq`, `openrouter`, `gateway`,
-`ollama`, `none`), `LLM_MODEL` to pick a model (provider model names change often, so set this to a current one),
+`ollama`, `none`), `LLM_MODEL` to pick a model (providers retire models often, so check their model list and set this if a call reports an unknown model),
 `LLM_BASE_URL` for any other OpenAI-compatible server (LM Studio, vLLM) and `ASSISTANT_RATE_LIMIT`
 (messages per minute per IP, default 20).
 
