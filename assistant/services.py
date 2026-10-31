@@ -102,19 +102,27 @@ def respond(request, message):
             label = config.label
         except anthropic.AuthenticationError:
             logger.error('Assistant: Anthropic credentials were rejected; using the rule-based assistant.')
+            providers.pause(config.name, 'Anthropic credentials were rejected')
         except anthropic.RateLimitError:
             logger.warning('Assistant: rate limited; using the rule-based assistant.')
+            providers.note_error(config.name, 'rate limited')
         except anthropic.APIStatusError as exc:
             logger.error('Assistant: API error %s; using the rule-based assistant.', exc.status_code)
+            providers.note_error(config.name, f'API error {exc.status_code}')
         except anthropic.APIConnectionError:
             logger.warning('Assistant: could not reach the API; using the rule-based assistant.')
+            providers.note_error(config.name, 'could not reach the API')
         except anthropic.AnthropicError as exc:
             logger.error('Assistant: LLM unavailable (%s); using the rule-based assistant.', exc)
+            providers.note_error(config.name, str(exc))
         except llm.LLMUnavailable as exc:
             logger.error('Assistant: %s; using the rule-based assistant.', exc)
             if any(f'HTTP {code}' in str(exc) for code in (401, 402, 403)):
                 # Credentials or billing problem: it won't fix itself on the next message.
                 providers.pause(config.name, str(exc))
+            else:
+                # A wrong model name or a hiccup: worth retrying, but say so on /health/.
+                providers.note_error(config.name, str(exc))
     if result is None:
         result = fallback.reply(message, request.user)
 

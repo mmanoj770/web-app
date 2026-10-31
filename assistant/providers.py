@@ -81,12 +81,28 @@ def gateway_token():
 def pause(name, reason, seconds=PAUSE_SECONDS):
     """Stop using a provider for a while (e.g. it rejected our credentials)."""
     cache.set(f'llm-paused:{name}', reason[:300], seconds)
+    note_error(name, reason, seconds)
     logger.warning('Assistant: pausing %s for %s s: %s', name, seconds, reason[:300])
 
 
 def paused(name):
     """The reason a provider is paused, or None."""
     return cache.get(f'llm-paused:{name}')
+
+
+def note_error(name, reason, seconds=PAUSE_SECONDS):
+    """Remember why a provider last failed.
+
+    Not every failure pauses the provider - a wrong model name, for instance, is worth retrying.
+    Those used to be visible only in the server log, which made "the assistant silently answers
+    with rules" hard to explain, so /health/ reports the last error too.
+    """
+    cache.set(f'llm-error:{name}', reason[:300], seconds)
+
+
+def last_error(name):
+    """The last error from a provider, or None."""
+    return cache.get(f'llm-error:{name}')
 
 
 _ollama_cache = {'checked_at': -60.0, 'models': []}

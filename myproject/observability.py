@@ -99,6 +99,10 @@ def health(request):
     paused = {name: reason for name in providers.PROVIDER_LABELS if (reason := providers.paused(name))}
     if paused:
         checks['assistant']['paused'] = paused
+    # Why the assistant last fell back to the rule-based answers, even when it keeps retrying.
+    errors = {name: err for name in providers.PROVIDER_LABELS if (err := providers.last_error(name))}
+    if errors:
+        checks['assistant']['last_error'] = errors
 
     healthy = checks['database']['ok'] and checks['database'].get('pending_migrations', 0) == 0
     status = 'ok' if healthy and mongo_ok is not False else ('degraded' if healthy else 'down')
